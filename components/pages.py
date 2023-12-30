@@ -5,6 +5,7 @@ import os
 
 class App:
     def __init__(self):
+        """ Inicia a janela principal da aplicação e as configurações básicas. """
         self.root = tk.Tk()
         self.root.title("My Photos")
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -12,13 +13,16 @@ class App:
         self.geometry()
 
         self.container = tk.Frame(self.root)
-        self.container.pack(fill=tk.BOTH, expand=True)
+        self.container.pack(fill=tk.BOTH, expand=True) # Configura o comportamento do Frame (self.container) dentro da janela principal (self.root), assegurando que o Frame ocupe e se ajuste dinamicamente ao tamanho da janela.
+
 
         self.menu = Menu(self)
         self.current = HomePage(self)
         self.root.mainloop()
 
     def geometry(self):
+        """ Define a geometria da janela principal da aplicação com base no tamanho do ecrã. """
+
         width = 1000
         height = 600
 
@@ -31,10 +35,14 @@ class App:
         self.root.geometry("{0}x{1}+{2}+{3}".format(width, height, x, y))
 
     def on_closing(self):
+        """ Pede confirmação para fechar a aplicação e fecha a janela após confirmação. """
+
         if messagebox.askokcancel("Close", "Do you want to close My Photos?"):
             self.root.destroy()
 
     def show(self, page):
+        """ Destroi a página atual e mostra a página especificada. """
+
         self.current.destroy()
         self.current = page(self)
 
@@ -49,6 +57,10 @@ class App:
 
 class Menu:
     def __init__(self, app):
+        """ Inicia o menu e as suas opções.
+        Args:
+        - app: A instância principal da aplicação. """
+
         menu = tk.Menu(app.root)
 
         options = tk.Menu(menu)
@@ -62,6 +74,10 @@ class Menu:
 
 class HomePage:
     def __init__(self, app):
+        """ Inicia o layout da Página Inicial.
+        Args:
+        - app: A instância principal da aplicação. """
+
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.pack(fill=tk.BOTH, expand=True)
@@ -79,10 +95,13 @@ class HomePage:
         btn_notifications.pack(fill="x", padx=5, pady=5)
 
     def destroy(self):
+        """ Destrói o quadro da Página Inicial para exibir conteúdo dinâmico na abertura de outra janela. """
         self.frame.destroy()
 
 class LoginPage:
     def __init__(self, app):
+        """ Inicia o layout da Página de Início de Sessão. """
+
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
@@ -106,9 +125,13 @@ class LoginPage:
         botao_criar_conta.pack(pady=(5, 20))
 
     def destroy(self):
+        """ Destrói o quadro da Página de Início de Sessão para exibir conteúdo dinâmico na abertura de outra janela. """
+
         self.frame.destroy()
 
     def criar_ficheiro(self):
+        """ Cria um ficheiro e escreve dados iniciais se não existir. """
+
         if not os.path.exists("./files"):
             os.mkdir("files")
             ficheiro = open("./files/users.txt", "w")
@@ -116,6 +139,8 @@ class LoginPage:
             ficheiro.close()
 
     def ler_infoUsers(self):
+        """ Lê informações do utilizador do ficheiro users.txt."""
+
         self.criar_ficheiro()
 
         users = []
@@ -133,6 +158,7 @@ class LoginPage:
         return users
 
     def fazer_login(self):
+        """ Realiza a ação de início de sessão e verifica as credenciais do utilizador. """
         users = self.ler_infoUsers()
 
         for i in range(len(users)):
@@ -145,6 +171,8 @@ class LoginPage:
 
 class CreateAccountPage:
     def __init__(self, app):
+        """ Inicia o layout da Página de Criação de Conta. """
+
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
@@ -171,17 +199,21 @@ class CreateAccountPage:
         btn_create_account.grid(row=4, columnspan=2, pady=10)
 
     def destroy(self):
+        """ Destrói o quadro da Página de Criação de Conta. """
+
         self.frame.destroy()
 
     def create_account(self):
-        # Get values from entries
+        """ Cria uma conta de utilizador com base nas informações inseridas. """
+
+        # Obter valores dos campos de entrada
         first_name = self.entry_first_name.get()
         last_name = self.entry_last_name.get()
         email = self.entry_email.get()
         password = self.entry_password.get()
 
-        # Process creation of account here
-        # For demonstration purposes, just display the entered data in a message box
+        # Processar a criação da conta aqui
+        # Para efeitos de demonstração, apenas apresentar os dados introduzidos numa caixa de mensagem
         messagebox.showinfo("Create Profile", "First Name: {0}\nLast Name: {1}\nEmail: {2}\nPassword: {3}". format(first_name,last_name, email, password))
 
         self.app.show(HomePage)
