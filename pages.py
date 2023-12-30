@@ -135,7 +135,7 @@ class LoginPage:
         if not os.path.exists("./files"):
             os.mkdir("files")
             ficheiro = open("./files/users.txt", "w")
-            ficheiro.write("1;adm;12345\n")
+            ficheiro.write(";12345\n")
             ficheiro.close()
 
     def ler_infoUsers(self):
