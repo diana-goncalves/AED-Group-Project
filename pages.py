@@ -1,7 +1,11 @@
 import tkinter as tk
-from tkinter import messagebox
-
+from tkinter import messagebox,filedialog
+from components.user_login import User_logged
+from PIL import Image, ImageTk
 import os
+import datetime as date
+from components.user_login import User_logged
+
 
 class App:
     def __init__(self):
@@ -54,7 +58,7 @@ class App:
 
     def notifications(self):
         print("Notifications")
-
+#####################################################################################################################################
 class Menu:
     def __init__(self, app):
         """ Inicia o menu e as suas opções.
@@ -71,7 +75,7 @@ class Menu:
 
         menu.add_cascade(label="Options", menu=options)
         app.root.config(menu=menu)
-
+#####################################################################################################################################
 class HomePage:
     def __init__(self, app):
         """ Inicia o layout da Página Inicial.
@@ -97,7 +101,7 @@ class HomePage:
     def destroy(self):
         """ Destrói o quadro da Página Inicial para exibir conteúdo dinâmico na abertura de outra janela. """
         self.frame.destroy()
-
+#####################################################################################################################################
 class LoginPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Início de Sessão. """
@@ -135,14 +139,14 @@ class LoginPage:
         if not os.path.exists("./files"):
             os.mkdir("files")
             ficheiro = open("./files/users.txt", "w")
-            ficheiro.write("1;adm;12345\n")  # ID;username;senha
+            ficheiro.write("1;adm;12345;First;Last\n")  # ID;username;senha
             ficheiro.close()
 
     def ler_infoUsers(self):
         """ Lê informações do utilizador do ficheiro users.txt."""
 
         self.criar_ficheiro()
-
+        #index;email;pass;firstname;surname
         users = []
         i = 0
         ficheiro = open("./files/users.txt", "r")
@@ -150,8 +154,8 @@ class LoginPage:
         for linha in linhas:
             users.append([])
             linha = linha.split(";")
-            linha[2] = linha[2].replace("\n", "")
-            for j in range(3):
+            linha[4] = linha[4].replace("\n", "")
+            for j in range(5):
                 users[i].append(linha[j])
             i += 1
         ficheiro.close()
@@ -164,11 +168,11 @@ class LoginPage:
         for i in range(len(users)):
             if str(self.user_email.get()) == str(users[i][1].strip()) and str(self.user_senha.get()) == str(users[i][2].strip()):
                 messagebox.showinfo("Login", "Successful Login")
+                u1 = User_logged(users[i][1].strip(),users[i][2].strip(),users[i][0].strip())
                 self.app.show(HomePage)
-                return
-
+                return u1#ver melhor
         messagebox.showerror("Invalid Login", "Wrong Credentials")
-
+#####################################################################################################################################
 class CreateAccountPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Criação de Conta. """
@@ -217,5 +221,99 @@ class CreateAccountPage:
         messagebox.showinfo("Create Profile", "First Name: {0}\nLast Name: {1}\nEmail: {2}\nPassword: {3}". format(first_name,last_name, email, password))
 
         self.app.show(HomePage)
+#####################################################################################################################################
+class Create_AlbumPage:
+    def __init__(self, app):
+        """ Inicia o layout da Página de Criação de Conta. """
+        self.create_album = tk.Tk()
+        self.create_album = tk.Frame(app.container)
+        self.create_album.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+
+        tk.Label(self.create_album,text="Nome:").pack(pady=5)
+        self.album_nome = tk.StringVar()
+        self.entry_nome = tk.Entry(self.create_album, width=30, textvariable=self.album_nome)
+        self.entry_nome.pack(pady=5)
+
+        tk.Label(self.create_album,text="Descrição:").pack(pady=10)
+        self.desc_txt = tk.Text(self.create_album, width=50, height=10)
+        self.desc_txt.pack(pady=5)
+
+        cat_frame = tk.LabelFrame(text="Categorias:", width=260,height=130, relief="sunken")
+        cat_frame.pack(pady=15)
+
+        self.cb_natur = tk.IntVar()
+        self.cb_arte = tk.IntVar()
+        self.cb_carros = tk.IntVar()
+        self.cb_comida = tk.IntVar()
+        self.cb_paisagem = tk.IntVar()
+        self.cb_outros = tk.IntVar()
+
+        self.cb1 = tk.Checkbutton(cat_frame, text="Natureza",variable = self.cb_natur)
+        self.cb2 = tk.Checkbutton(cat_frame, text="Arte",variable = self.cb_arte)
+        self.cb3 = tk.Checkbutton(cat_frame, text="Carros",variable = self.cb_carros)
+        self.cb4 = tk.Checkbutton(cat_frame, text="Comida",variable = self.cb_comida)
+        self.cb5 = tk.Checkbutton(cat_frame, text="Paisagem",variable = self.cb_paisagem)
+        self.cb6 = tk.Checkbutton(cat_frame, text="Outros...",variable = self.cb_outros)
+        self.cb1.place(x=35,y=10)
+        self.cb2.place(x=35,y=40)
+        self.cb3.place(x=35,y=70)
+        self.cb4.place(x=150,y=10)
+        self.cb5.place(x=150,y=40)
+        self.cb6.place(x=150,y=70)
+        self.Categorias = str(self.cb_natur)+str(self.cb_arte)+str(self.cb_carros)+str(self.cb_comida)+str(self.cb_paisagem)+str(self.cb_outros)
+
+
+        btn_gravar = tk.Button(self.create_album, text="Escolher Imagens e Criar Album!",width=30, height=5, command=self.guardar)
+        btn_gravar.pack(pady=10)
+        self.create_album.mainloop()
+
+    def guardar_imagens(index):
+        caminhos= filedialog.askopenfilenames(title="Select Image", initialdir="./images",
+                                            filetypes=(("png files","*.png"),("gif files","*.gif"), ("all files","*.*")))
+        destino_dir = "./Albuns/%s"%index
+        if caminhos == "":
+            messagebox.showerror("Error","Nenhuma imagem inserir\nIntroduza pelo menos 1 Imagem!")
+            os.rmdir(destino_dir)
+        else:
+            i=0
+            for caminho in caminhos:
+                novo_caminho = os.path.join(destino_dir,"%s.png"%i)
+                i += 1
+                imagem_pil = Image.open(caminho)
+                imagem_pil.save(novo_caminho)
+    def cria_caminho_album(self):
+        """
+            Cria uma pasta para o meu album
+        """
+        if not os.path.exists("./Albuns"):#Confirma se o path existe, cria se nao
+            os.mkdir("./Albuns")
+        index = len(os.listdir("./Albuns"))+1
+        novo_album_dir=os.path.join("./Albuns",str(index))
+        os.mkdir(novo_album_dir)
+        return index
+
+    def guardar_album_ficheiro(self,nome,desc,Categorias,data,user,index):
+        if not os.path.exists("./files/Albuns"):#Confirma se o path existe, cria se nao
+            os.mkdir("./files/Albuns")
+        ficheiro = open("./files/Albuns","a")
+        ficheiro.write(index+";"+nome+";"+desc+";"+Categorias+";"+data+";"+user+"\n")
+        ficheiro.close()
+
+    def guardar(self):
+        """
+            Guarda Imagens e cria um album
+        """
+        index = self.cria_caminho_album()
+        self.guardar_imagens(index)
+        data = date.datetime.now() #recolher data 
+        #user = Login().fazer_login() #recolher nome do autor 
+        user = "adm"
+        self.guardar_album_ficheiro(self.entry_nome.get(),self.desc_txt.get(),self.Categorias,data.strftime("%d/%m/%Y"),user,index)
+
+    def destroy(self):
+        """ Destrói o quadro da Página de Criação de Album. """
+
+        self.frame.destroy()
 
 app = App()

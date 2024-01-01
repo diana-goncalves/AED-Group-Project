@@ -3,11 +3,11 @@ from tkinter import messagebox
 from .create_account import CreateAccountWindow
 import os
 
-if not os.path.exists("./files"):#Confirma se o path existe, cria se nao
-    os.mkdir("files")
-    ficheiro = open("./files/users.txt","w")#criar ficheiro
-    ficheiro.write("1;adm;12345\n")#criar conta adm
-    ficheiro.close()
+class User_logged:
+    def __init__(self,nome,index,senha):
+        self.nome = nome
+        self.index = index
+        self.senha = senha
 
 class Login:
     def __init__(self):
@@ -74,8 +74,9 @@ class Login:
         for i in range(len(users)):
             if str(self.user_email.get()) == str(users[i][1].strip()) and str(self.user_senha.get()) == str(users[i][2].strip()):
                 messagebox.showinfo("Login", "Login Bem Sucedido")
+                u1 = User_logged(users[i][1].strip(),users[i][2].strip(),users[i][0].strip())
                 self.login_window.destroy()
-                return
+                return u1
         messagebox.showerror("Login Invalido", "Senha ou Email incorretos")
 
     def criar_janela_conta(self):
