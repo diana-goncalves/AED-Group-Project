@@ -51,7 +51,6 @@ class Create_AlbumPage:
         self.cb_comida = tk.IntVar()
         self.cb_paisagem = tk.IntVar()
         self.cb_outros = tk.IntVar()
-
         self.cb1 = tk.Checkbutton(cat_frame, text="Natureza",variable = self.cb_natur)
         self.cb2 = tk.Checkbutton(cat_frame, text="Arte",variable = self.cb_arte)
         self.cb3 = tk.Checkbutton(cat_frame, text="Carros",variable = self.cb_carros)
@@ -64,9 +63,7 @@ class Create_AlbumPage:
         self.cb4.place(x=150,y=10)
         self.cb5.place(x=150,y=40)
         self.cb6.place(x=150,y=70)
-        #rever
-        self.Categorias = str(self.cb_natur)+str(self.cb_arte)+str(self.cb_carros)+str(self.cb_comida)+str(self.cb_paisagem)+str(self.cb_outros)
-        #
+        
 
         self.btn_gravar = tk.Button(self.create_album, text="Escolher Imagens e Criar Album!",width=30, height=5, command=self.guardar)
         self.btn_gravar.pack(pady=10)
@@ -112,7 +109,7 @@ class Create_AlbumPage:
         data = date.datetime.now() #recolher data 
         #user = Login().fazer_login() #recolher nome do autor 
         user = "adm"
-        self.guardar_album_ficheiro(self.entry_nome.get(),self.desc_txt.get("1.0",tk.END),self.Categorias,data.strftime("%d/%m/%Y"),user,index)
+        self.guardar_album_ficheiro(self.entry_nome.get(),self.desc_txt.get("1.0","end-1c"),self.cb_natur.get(),self.cb_arte.get(),self.cb_carros.get(),self.cb_comida.get(),data.strftime("%d/%m/%Y"),user,index)
 
     def destroy(self):
         """ Destrói o quadro da Página de Criação de Album. """
