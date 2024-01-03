@@ -54,7 +54,7 @@ class App:
     def profile(self):
         print("Perfil")
 
-    def create_account(self):
+    def create_album(self):
         print("Create Album")
 
     def notifications(self):
@@ -98,7 +98,7 @@ class HomePage:
         btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: app.show(Profile))
         btn_profile.pack(fill="x", padx=5, pady=5)
 
-        btn_profile = tk.Button(sidebar, text="Create Account", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.create_account)
+        btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.create_album)
         btn_profile.pack(fill="x", padx=5, pady=5)
 
         btn_explore = tk.Button(sidebar, text="Explore", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.explore)
@@ -260,14 +260,23 @@ class Profile:
 
         sidebar = tk.Frame(self.frame, bg="gray", width=200)
         sidebar.pack(fill="y", side="left")
-        btn_order = tk.Button(sidebar, text="Order", bg="white", pady=10, padx=5, relief="raised", cursor="hand2")
-        btn_order.pack(fill="x", padx=5, pady=5)
+        btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: app.show(Profile))
+        btn_profile.pack(fill="x", padx=5, pady=5)
+
+        btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.create_album)
+        btn_profile.pack(fill="x", padx=5, pady=5)
+
+        btn_explore = tk.Button(sidebar, text="Explore", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.explore)
+        btn_explore.pack(fill="x", padx=5, pady=5)
+
         btn_notifications = tk.Button(sidebar, text="Notifications", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.notifications)
         btn_notifications.pack(fill="x", padx=5, pady=5)
-        btn_add_album = tk.Button(sidebar, text="ADD", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda:app.show(Create_AlbumPage))
-        btn_add_album.pack(fill="x", padx=5, pady=10)
         
+        
+    def destroy(self):
+        """ Destrói o quadro da Página de Criação de Album. """
 
+        self.frame.destroy()
 
         
 
