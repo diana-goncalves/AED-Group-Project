@@ -125,8 +125,11 @@ class LoginPage:
         botao_login = tk.Button(self.frame, text="Login", command=self.fazer_login, width=15)
         botao_login.pack(pady=(20, 0))
 
-        botao_criar_conta = tk.Button(self.frame, text="Create Account", command=lambda: app.show(CreateAccountPage))
+        botao_criar_conta = tk.Button(self.frame, text="Create Account", command=lambda: app.show(CreateAccountPage), width=15)
         botao_criar_conta.pack(pady=(5, 20))
+
+        botao_cancelar = tk.Button(self.frame, text="Cancel", width=15, command=lambda: app.show(HomePage))
+        botao_cancelar.pack(pady=(0,0))
 
     def destroy(self):
         """ Destrói o quadro da Página de Início de Sessão para exibir conteúdo dinâmico na abertura de outra janela. """
