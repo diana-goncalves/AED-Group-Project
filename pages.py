@@ -56,9 +56,13 @@ class App:
     def profile(self):
         print("Perfil")
 
+    def create_account(self):
+        print("Create Album")
+
     def notifications(self):
         print("Notifications")
-#####################################################################################################################################
+
+
 class Menu:
     def __init__(self, app):
         """ Inicia o menu e as suas opções.
@@ -68,14 +72,13 @@ class Menu:
         menu = tk.Menu(app.root)
 
         options = tk.Menu(menu)
-        options.add_command(label="Explore", command=app.explore)
-        options.add_command(label="Profile", command=app.profile)
-        options.add_command(label="Notifications", command=app.notifications)
         options.add_command(label="Login", command=lambda: app.show(LoginPage))
+        options.add_command(label="Create Account", command=lambda: app.show(CreateAccountPage))
 
         menu.add_cascade(label="Options", menu=options)
         app.root.config(menu=menu)
-#####################################################################################################################################
+
+# Main Page
 class HomePage:
     def __init__(self, app):
         """ Inicia o layout da Página Inicial.
@@ -92,6 +95,9 @@ class HomePage:
         btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.profile)
         btn_profile.pack(fill="x", padx=5, pady=5)
 
+        btn_profile = tk.Button(sidebar, text="Create Account", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.create_account)
+        btn_profile.pack(fill="x", padx=5, pady=5)
+
         btn_explore = tk.Button(sidebar, text="Explore", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.explore)
         btn_explore.pack(fill="x", padx=5, pady=5)
 
@@ -101,7 +107,8 @@ class HomePage:
     def destroy(self):
         """ Destrói o quadro da Página Inicial para exibir conteúdo dinâmico na abertura de outra janela. """
         self.frame.destroy()
-#####################################################################################################################################
+
+
 class LoginPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Início de Sessão. """
@@ -175,7 +182,8 @@ class LoginPage:
                 self.app.show(HomePage)
                 return u1#ver melhor
         messagebox.showerror("Invalid Login", "Wrong Credentials")
-#####################################################################################################################################
+
+
 class CreateAccountPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Criação de Conta. """
@@ -224,7 +232,9 @@ class CreateAccountPage:
         messagebox.showinfo("Create Profile", "First Name: {0}\nLast Name: {1}\nEmail: {2}\nPassword: {3}". format(first_name,last_name, email, password))
 
         self.app.show(HomePage)
-#####################################################################################################################################
+
+
+
 class Create_AlbumPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Criação de Conta. """
@@ -309,8 +319,8 @@ class Create_AlbumPage:
         """
         index = self.cria_caminho_album()
         self.guardar_imagens(index)
-        data = date.datetime.now() #recolher data 
-        #user = Login().fazer_login() #recolher nome do autor 
+        data = date.datetime.now() #recolher data
+        #user = Login().fazer_login() #recolher nome do autor
         user = "adm"
         self.guardar_album_ficheiro(self.entry_nome.get(),self.desc_txt.get(),self.Categorias,data.strftime("%d/%m/%Y"),user,index)
 
