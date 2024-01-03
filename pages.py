@@ -69,7 +69,7 @@ class Menu:
 
         options = tk.Menu(menu)
         options.add_command(label="Explore", command=app.explore)
-        options.add_command(label="Profile", command=app.profile)
+        options.add_command(label="Profile", command=lambda: app.show(Profile))
         options.add_command(label="Notifications", command=app.notifications)
         options.add_command(label="Login", command=lambda: app.show(LoginPage))
 
@@ -89,7 +89,7 @@ class HomePage:
         sidebar = tk.Frame(self.frame, bg="gray", width=200)
         sidebar.pack(fill="y", side="left")
 
-        btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.profile)
+        btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: app.show(Profile))
         btn_profile.pack(fill="x", padx=5, pady=5)
 
         btn_explore = tk.Button(sidebar, text="Explore", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.explore)
@@ -225,6 +225,32 @@ class CreateAccountPage:
 
         self.app.show(HomePage)
 #####################################################################################################################################
+
+
+class Profile:
+    def __init__(self, app):
+        """ Inicia o layout do Profile.
+        """
+
+        self.app = app
+        self.frame = tk.Frame(app.container)
+        self.frame.pack(fill=tk.BOTH, expand=True)
+
+        sidebar = tk.Frame(self.frame, bg="gray", width=200)
+        sidebar.pack(fill="y", side="left")
+        btn_order = tk.Button(sidebar, text="Order", bg="white", pady=10, padx=5, relief="raised", cursor="hand2")
+        btn_order.pack(fill="x", padx=5, pady=5)
+        btn_notifications = tk.Button(sidebar, text="Notifications", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.notifications)
+        btn_notifications.pack(fill="x", padx=5, pady=5)
+        btn_add_album = tk.Button(sidebar, text="ADD", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda:app.show(Create_AlbumPage))
+        btn_add_album.pack(fill="x", padx=5, pady=10)
+        
+
+
+        
+
+#####################################################################################################################################
+
 class Create_AlbumPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Criação de Conta. """
