@@ -54,7 +54,7 @@ class App:
     def profile(self):
         print("Perfil")
 
-    def create_account(self):
+    def create_album(self):
         print("Create Album")
 
     def notifications(self):
@@ -93,7 +93,7 @@ class HomePage:
         btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.profile)
         btn_profile.pack(fill="x", padx=5, pady=5)
 
-        btn_profile = tk.Button(sidebar, text="Create Account", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.create_account)
+        btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.create_album)
         btn_profile.pack(fill="x", padx=5, pady=5)
 
         btn_explore = tk.Button(sidebar, text="Explore", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.explore)
