@@ -1,10 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox,filedialog
-from components.user_login import User_logged
 from PIL import Image, ImageTk
 import os
 import datetime as date
-from components.user_login import User_logged
 
 
 class App:
@@ -56,9 +54,13 @@ class App:
     def profile(self):
         print("Perfil")
 
+    def create_account(self):
+        print("Create Album")
+
     def notifications(self):
         print("Notifications")
-#####################################################################################################################################
+
+
 class Menu:
     def __init__(self, app):
         """ Inicia o menu e as suas opções.
@@ -72,15 +74,19 @@ class Menu:
         options.add_command(label="Profile", command=lambda: app.show(Profile))
         options.add_command(label="Notifications", command=app.notifications)
         options.add_command(label="Login", command=lambda: app.show(LoginPage))
+        options.add_command(label="Create Account", command=lambda: app.show(CreateAccountPage))
 
         menu.add_cascade(label="Options", menu=options)
         app.root.config(menu=menu)
-#####################################################################################################################################
+
+# Main Page
 class HomePage:
     def __init__(self, app):
         """ Inicia o layout da Página Inicial.
         Args:
         - app: A instância principal da aplicação. """
+
+        print(u1.mail)
 
         self.app = app
         self.frame = tk.Frame(app.container)
@@ -90,6 +96,9 @@ class HomePage:
         sidebar.pack(fill="y", side="left")
 
         btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: app.show(Profile))
+        btn_profile.pack(fill="x", padx=5, pady=5)
+
+        btn_profile = tk.Button(sidebar, text="Create Account", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.create_account)
         btn_profile.pack(fill="x", padx=5, pady=5)
 
         btn_explore = tk.Button(sidebar, text="Explore", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.explore)
@@ -102,6 +111,15 @@ class HomePage:
         """ Destrói o quadro da Página Inicial para exibir conteúdo dinâmico na abertura de outra janela. """
         self.frame.destroy()
 #####################################################################################################################################
+
+class User_logged:
+    def __init__(self,index,mail,senha,first_name,last_name):
+        self.mail = mail
+        self.autor_index = index
+        self.senha = senha
+        self.first_name = first_name
+        self.last_name = last_name
+
 class LoginPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Início de Sessão. """
@@ -171,11 +189,15 @@ class LoginPage:
         for i in range(len(users)):
             if str(self.user_email.get()) == str(users[i][1].strip()) and str(self.user_senha.get()) == str(users[i][2].strip()):
                 messagebox.showinfo("Login", "Successful Login")
-                u1 = User_logged(users[i][1].strip(),users[i][2].strip(),users[i][0].strip())
+                print(u1.mail)
+                #u1 = User_logged(users[i][0].strip(),users[i][1].strip(),users[i][2].strip(),users[i][3].strip(),users[i][4].strip())
+                u1.mail = users[i][1].strip()
+                print(u1.mail)
                 self.app.show(HomePage)
-                return u1#ver melhor
+                return
         messagebox.showerror("Invalid Login", "Wrong Credentials")
-#####################################################################################################################################
+
+
 class CreateAccountPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Criação de Conta. """
@@ -251,6 +273,8 @@ class Profile:
 
 #####################################################################################################################################
 
+
+
 class Create_AlbumPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Criação de Conta. """
@@ -290,7 +314,7 @@ class Create_AlbumPage:
         self.cb4.place(x=150,y=10)
         self.cb5.place(x=150,y=40)
         self.cb6.place(x=150,y=70)
-        self.Categorias = str(self.cb_natur)+str(self.cb_arte)+str(self.cb_carros)+str(self.cb_comida)+str(self.cb_paisagem)+str(self.cb_outros)
+        self.Categorias = str(self.cb_natur.get())+str(self.cb_arte.get())+str(self.cb_carros.get())+str(self.cb_comida.get())+str(self.cb_paisagem.get())+str(self.cb_outros.get())
 
 
         btn_gravar = tk.Button(self.create_album, text="Escolher Imagens e Criar Album!",width=30, height=5, command=self.guardar)
@@ -336,7 +360,9 @@ class Create_AlbumPage:
         index = self.cria_caminho_album()
         self.guardar_imagens(index)
         data = date.datetime.now() #recolher data 
-        #user = Login().fazer_login() #recolher nome do autor 
+        user = u1.autor_index() #recolher nome do autor 
+        data = date.datetime.now() #recolher data
+        #user = Login().fazer_login() #recolher nome do autor
         user = "adm"
         self.guardar_album_ficheiro(self.entry_nome.get(),self.desc_txt.get(),self.Categorias,data.strftime("%d/%m/%Y"),user,index)
 
@@ -345,4 +371,6 @@ class Create_AlbumPage:
 
         self.frame.destroy()
 
+global u1
+u1 = User_logged("0","user","","","")
 app = App()
