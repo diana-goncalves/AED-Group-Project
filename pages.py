@@ -139,7 +139,7 @@ class LoginPage:
         entry_senha = tk.Entry(self.frame, show="*", textvariable=self.user_senha)
         entry_senha.pack()
 
-        botao_login = tk.Button(self.frame, text="Login", command=self.fazer_login, width=15)
+        botao_login = tk.Button(self.frame, text="Login", command=self.login, width=15)
         botao_login.pack(pady=(20, 0))
 
         botao_criar_conta = tk.Button(self.frame, text="Create Account", command=lambda: app.show(CreateAccountPage), width=15)
@@ -153,7 +153,7 @@ class LoginPage:
 
         self.frame.destroy()
 
-    def criar_ficheiro(self):
+    def create_file(self):
         """ Cria um ficheiro e escreve dados iniciais se não existir. """
 
         if not os.path.exists("./files"):
@@ -162,10 +162,10 @@ class LoginPage:
             ficheiro.write("1;adm;12345;First;Last\n")  # ID;username;senha
             ficheiro.close()
 
-    def ler_infoUsers(self):
+    def read_InfoUser(self):
         """ Lê informações do utilizador do ficheiro users.txt."""
 
-        self.criar_ficheiro()
+        self.create_file()
         #index;email;pass;firstname;surname
         users = []
         i = 0
@@ -181,9 +181,9 @@ class LoginPage:
         ficheiro.close()
         return users
 
-    def fazer_login(self):
+    def login(self):
         """ Realiza a ação de início de sessão e verifica as credenciais do utilizador. """
-        users = self.ler_infoUsers()
+        users = self.read_InfoUser()
 
         for i in range(len(users)):
             if str(self.user_email.get()) == str(users[i][1].strip()) and str(self.user_senha.get()) == str(users[i][2].strip()):
@@ -316,18 +316,18 @@ class Create_AlbumPage:
         self.cb5.place(x=150, y=40)
         self.cb6.place(x=150, y=70)
 
-        btn_gravar = tk.Button(self.frame, text="Choose Images and Create Album!", width=30, height=5, command=self.guardar)
+        btn_gravar = tk.Button(self.frame, text="Choose Images and Create Album!", width=30, height=5, command=self.save_and_create_album)
         btn_gravar.pack(pady=10)
 
 
-    def guardar_imagens(self):
+    def save_images(self):
             caminhos = filedialog.askopenfilenames(
                 title="Select Image",
                 initialdir="./images",
                 filetypes=(("png files", "*.png"), ("gif files", "*.gif"), ("all files", "*.*")),
             )
 
-            destino_dir = "./Albuns/%s" % self.cria_caminho_album()
+            destino_dir = "./Albuns/%s" % self.create_album_path()
 
             if caminhos == "":
                 messagebox.showerror("Error", "No image inserted. Insert at least 1 image!")
@@ -340,7 +340,7 @@ class Create_AlbumPage:
                     imagem_pil = Image.open(caminho)
                     imagem_pil.save(novo_caminho)
 
-    def cria_caminho_album(self):
+    def create_album_path(self):
         """ Cria uma pasta para o meu album """
         if not os.path.exists("./Albuns"): # Confirma se o path existe, cria se nao
             os.mkdir("./Albuns")
@@ -349,24 +349,24 @@ class Create_AlbumPage:
         os.mkdir(novo_album_dir)
         return index
 
-    def guardar_album_ficheiro(self,nome,desc,Categorias,data,user,index):
+    def save_file_album(self,nome,desc,Categorias,data,user,index):
         if not os.path.exists("./files/Albuns"): # Confirma se o path existe, cria se nao
             os.mkdir("./files/Albuns")
         ficheiro = open("./files/Albuns","a")
         ficheiro.write(index+";"+nome+";"+desc+";"+Categorias+";"+data+";"+user+"\n")
         ficheiro.close()
 
-    def guardar(self):
+    def save_and_create_album(self):
         """ Guarda Imagens e cria um album """
 
-        index = self.cria_caminho_album()
-        self.guardar_imagens(index)
+        index = self.create_album_path()
+        self.save_images(index)
         data = date.datetime.now() # recolhe data
         user = u1.autor_index() # recolhe nome do autor
         data = date.datetime.now() # recolhe data
-        #user = Login().fazer_login() # recolhe nome do autor
+        #user = Login().login() # recolhe nome do autor
         user = "adm"
-        self.guardar_album_ficheiro(self.entry_nome.get(),self.desc_txt.get(),self.Categorias,data.strftime("%d/%m/%Y"),user,index)
+        self.save_file_album(self.entry_nome.get(),self.desc_txt.get(),self.Categorias,data.strftime("%d/%m/%Y"),user,index)
 
     def destroy(self):
         """ Destrói o quadro da Página de Criação de Album. """
