@@ -321,37 +321,55 @@ class Create_AlbumPage:
 
 
     def save_images(self):
-            caminhos = filedialog.askopenfilenames(
-                title="Select Image",
-                initialdir="./images",
-                filetypes=(("png files", "*.png"), ("gif files", "*.gif"), ("all files", "*.*")),
-            )
+        """ Abre uma janela para selecionar múltiplos arquivos de imagem """
 
-            destino_dir = "./Albuns/%s" % self.create_album_path()
+        caminhos = filedialog.askopenfilenames(
+            title="Select Image",
+            initialdir="./images",
+            filetypes=(("png files", "*.png"), ("gif files", "*.gif"), ("all files", "*.*")),
+        )
 
-            if caminhos == "":
-                messagebox.showerror("Error", "No image inserted. Insert at least 1 image!")
-                os.rmdir(destino_dir)
-            else:
-                i = 0
-                for caminho in caminhos:
-                    novo_caminho = os.path.join(destino_dir, "{i}.png".format(i))
-                    i += 1
-                    imagem_pil = Image.open(caminho)
-                    imagem_pil.save(novo_caminho)
+        # Cria o diretório de destino baseado na função create_album_path()
+        destino_dir = "./Albuns/%s" % self.create_album_path()
+
+        # Verifica se nenhum arquivo foi selecionado, exibe uma mensagem de erro e remove o diretório de destino
+        if caminhos == "":
+            messagebox.showerror("Error", "No image inserted. Insert at least 1 image!")
+            os.rmdir(destino_dir)
+        else:
+            i = 0
+            # Itera sobre os caminhos dos arquivos selecionados
+            for caminho in caminhos:
+                # Define um novo caminho para a imagem com base no diretório de destino e no índice
+                novo_caminho = os.path.join(destino_dir, "{i}.png".format(i))
+                i += 1
+
+                # Abre a imagem selecionada com o módulo PIL e salva-a no novo caminho
+                imagem_pil = Image.open(caminho)
+                imagem_pil.save(novo_caminho)
 
     def create_album_path(self):
-        """ Cria uma pasta para o meu album """
+        """ Cria uma pasta para o álbum se não existir """
         if not os.path.exists("./Albuns"): # Confirma se o path existe, cria se nao
             os.mkdir("./Albuns")
+
+        # Obtém o índice para o novo álbum com base no número de pastas presentes em "./Albuns"
         index = len(os.listdir("./Albuns"))+1
+
+        # Cria um novo diretório para o álbum
         novo_album_dir=os.path.join("./Albuns",str(index))
         os.mkdir(novo_album_dir)
+
+        # Retorna o índice do novo álbum
         return index
 
     def save_file_album(self,nome,desc,Categorias,data,user,index):
+        """ Cria um diretório para os arquivos do álbum se não existir """
+
         if not os.path.exists("./files/Albuns"): # Confirma se o path existe, cria se nao
             os.mkdir("./files/Albuns")
+
+        # Abre o arquivo de texto onde serão registradas informações do álbum
         ficheiro = open("./files/Albuns","a")
         ficheiro.write(index+";"+nome+";"+desc+";"+Categorias+";"+data+";"+user+"\n")
         ficheiro.close()
