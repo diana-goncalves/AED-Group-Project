@@ -25,8 +25,8 @@ class App:
     def geometry(self):
         """ Define a geometria da janela principal da aplicação com base no tamanho do ecrã. """
 
-        width = 1920
-        height = 1080
+        width = 1280
+        height = 720
 
         screenwidth = self.root.winfo_screenwidth()
         screenheight = self.root.winfo_screenheight()
@@ -70,13 +70,12 @@ class Menu:
 
         menu = tk.Menu(app.root)
 
-        options = tk.Menu(menu)
-        options.add_command(label="Home", command=lambda: app.show(HomePage))
-        options.add_command(label="Login", command=lambda: app.show(LoginPage))
-        options.add_command(label="Create Account", command=lambda: app.show(CreateAccountPage))
-
-        menu.add_cascade(label="Options", menu=options)
-        app.root.config(menu=menu)
+       
+        menu.add_command(label="Home", command=lambda: app.show(HomePage))
+        menu.add_command(label="Login", command=lambda: app.show(LoginPage))
+        menu.add_command(label="Create Account", command=lambda: app.show(CreateAccountPage))
+        
+        app.root.configure(menu=menu)
 
 # ---------- Home Page ---------------
 class HomePage:
@@ -147,8 +146,6 @@ class LoginPage:
         botao_criar_conta = tk.Button(self.frame, text="Create Account", command=lambda: app.show(CreateAccountPage), width=15)
         botao_criar_conta.pack(pady=(5, 20))
 
-        botao_cancelar = tk.Button(self.frame, text="Cancel", width=15, command=lambda: app.show(HomePage))
-        botao_cancelar.pack(pady=(0,0))
 
     def destroy(self):
         """ Destrói o quadro da Página de Início de Sessão para exibir conteúdo dinâmico na abertura de outra janela. """
@@ -226,9 +223,6 @@ class CreateAccountPage:
         btn_create_account = tk.Button(self.frame, text="Create Account", command=self.create_account)
         btn_create_account.grid(row=4, columnspan=2, pady=10)
 
-        #Button Cancel
-        botao_cancelar = tk.Button(self.frame, text="Cancel", width=15, command=lambda: app.show(HomePage))
-        botao_cancelar.grid(row=5, columnspan=2, pady=10)
 
     def destroy(self):
         """ Destrói o quadro da Página de Criação de Conta. """
@@ -325,9 +319,6 @@ class Create_AlbumPage:
         btn_gravar = tk.Button(self.frame, text="Choose Images and Create Album!", width=30, height=5, command=self.save_and_create_album)
         btn_gravar.pack(pady=10)
 
-        #Button Cancel
-        botao_cancelar = tk.Button(self.frame, text="Cancel", width=15, command=lambda: app.show(HomePage))
-        botao_cancelar.pack(pady=(0,0))
 
     def save_images(self):
         """ Save Images """
@@ -383,8 +374,8 @@ class Create_AlbumPage:
         index = self.save_images()  # Chama save_images diretamente para obter o índice
         data = date.datetime.now()
         user = u1.autor_index()
-        user = "adm"
-        self.save_file_album(self.entry_nome.get(), self.desc_txt.get(), self.Categorias, data.strftime("%d/%m/%Y"), user, index)
+        Categorias= self.Categorias = str(self.cb_nature.get()) + str(self.cb_art.get()) + str(self.cb_cars.get()) + str(self.cb_food.get()) + str(self.cb_landscape.get()) + str(self.cb_others.get())
+        self.save_file_album(self.entry_nome.get(), self.desc_txt.get(),Categorias, data.strftime("%d/%m/%Y"), user, index)
 
 
     def destroy(self):
