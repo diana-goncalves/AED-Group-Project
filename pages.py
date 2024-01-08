@@ -193,7 +193,7 @@ class LoginPage:
             if str(self.user_email.get()) == str(users[i][1].strip()) and str(self.user_senha.get()) == str(users[i][2].strip()):#asks if there is any data equal to those entered
                 messagebox.showinfo("Login", "Successful Login")
                 #u1 = User_logged(users[i][0].strip(),users[i][1].strip(),users[i][2].strip(),users[i][3].strip(),users[i][4].strip())
-                u1.mail = users[i][1].strip()
+                # u1.mail = users[i][1].strip()
                 self.app.show(HomePage)
                 self.app.root.update_idletasks()
                 return
