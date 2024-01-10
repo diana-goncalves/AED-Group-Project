@@ -29,10 +29,10 @@ class App:
         sidebar = tk.Frame(self.container, bg="gray", width=200)
         sidebar.pack(fill="y", side="left")
 
-        btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(Profile))
+        btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(ProfilePage))
         btn_profile.pack(fill="x", padx=5, pady=5)
 
-        btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(Create_AlbumPage))
+        btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(CreateAlbumPage))
         btn_profile.pack(fill="x", padx=5, pady=5)
 
         btn_explore = tk.Button(sidebar, text="Explore", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(ExplorePage))
@@ -73,10 +73,6 @@ class App:
     def profile(self):
         print("Profile")
 
-    def create_album(self):
-        """ Abre a janela de criação de álbum. """
-        self.show(Create_AlbumPage)
-
     def notifications(self):
         print("Notifications")
 
@@ -94,6 +90,7 @@ class Menu:
 
         menu.add_cascade(label="Options", menu=options)
         app.root.config(menu=menu)
+
 # ---------- Home Page ---------------
 class HomePage:
     def __init__(self, app):
@@ -104,21 +101,6 @@ class HomePage:
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.pack(fill=tk.BOTH, expand=True)
-
-        # sidebar = tk.Frame(self.frame, bg="gray", width=200)
-        # sidebar.pack(fill="y", side="left")
-
-        # btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: app.show(Profile))
-        # btn_profile.pack(fill="x", padx=5, pady=5)
-
-        # btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: app.show(Create_AlbumPage))
-        # btn_profile.pack(fill="x", padx=5, pady=5)
-
-        # btn_explore = tk.Button(sidebar, text="Explore", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.explore)
-        # btn_explore.pack(fill="x", padx=5, pady=5)
-
-        # btn_notifications = tk.Button(sidebar, text="Notifications", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.notifications)
-        # btn_notifications.pack(fill="x", padx=5, pady=5)
 
     def destroy(self):
         """ Destrói o quadro da Página Inicial para exibir conteúdo dinâmico na abertura de outra janela. """
@@ -133,6 +115,7 @@ class User_logged:
         self.last_name = last_name
 
 # ---------- Login Page ---------------
+        
 class LoginPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Início de Sessão. """
@@ -262,24 +245,8 @@ class CreateAccountPage:
 
         self.app.show(HomePage)
 
-class Profile:
-    def __init__(self, app):
-        """ Inicia o layout do Profile. """
-
-        self.app = app
-        self.frame = tk.Frame(app.container)
-        self.frame.pack(fill=tk.BOTH, expand=True)
-
-        app.create_sidebar()
-
-    def destroy(self):
-        """ Destrói o quadro da Página de Criação de Album. """
-
-        self.frame.destroy()
-
-
 # ---------- Create Album Page ---------------
-class Create_AlbumPage:
+class CreateAlbumPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Criação de Conta. """
         self.app = app
@@ -322,7 +289,18 @@ class Create_AlbumPage:
         btn_gravar = tk.Button(self.frame, text="Choose Images and Create Album!", width=30, height=5, command=self.save_and_create_album)
         btn_gravar.pack(pady=10)
 
-    def save_images(self):
+    def create_album_path(self):
+        """
+            Create path to a new albu 
+        """
+        if not os.path.exists("./Albuns"):#Confirms if the path exists, creates it if not
+            os.mkdir("./Albuns")
+        index = len(os.listdir("./Albuns"))+1#read how many albums you have and create the new index
+        novo_album_dir=os.path.join("./Albuns",str(index))#make the path for the new album
+        os.mkdir(novo_album_dir)
+        return index#return index
+
+    def save_images(self,index):
         """ Save Images """
 
         caminhos = filedialog.askopenfilenames(
@@ -332,7 +310,7 @@ class Create_AlbumPage:
         )
 
         # Cria o diretório de destino baseado na função create_album_path()
-        destino_dir = "./Albuns/%s" % self.create_album_path()
+        destino_dir = "./Albuns/%s" %str(index)
 
         # Verifica se nenhum arquivo foi selecionado, exibe uma mensagem de erro e remove o diretório de destino
         if caminhos == "":
@@ -343,49 +321,53 @@ class Create_AlbumPage:
             # Itera sobre os caminhos dos arquivos selecionados
             for caminho in caminhos:
                 # Define um novo caminho para a imagem com base no diretório de destino e no índice
-                novo_caminho = os.path.join(destino_dir, "{i}.png".format(i))
+                novo_caminho = os.path.join(destino_dir, "{}.png".format(i))
                 i += 1
 
                 # Abre a imagem selecionada com o módulo PIL e salva-a no novo caminho
                 imagem_pil = Image.open(caminho)
                 imagem_pil.save(novo_caminho)
-                os.mkdir("./Albuns")
-
-        # Obtém o índice para o novo álbum com base no número de pastas presentes em "./Albuns"
-        index = len(os.listdir("./Albuns"))+1
-
-        # Cria um novo diretório para o álbum
-        novo_album_dir=os.path.join("./Albuns",str(index))
-
-        # Retorna o índice do novo álbum
-        return index
-
+   
     def save_file_album(self,nome,desc,Categorias,data,user,index):
         """ Cria um diretório para os arquivos do álbum se não existir """
 
-        if not os.path.exists("./files/Albuns"): # Confirma se o path existe, cria se nao
-
-            # Abre o arquivo de texto onde serão registradas informações do álbum
-            ficheiro = open("./files/Albuns","a")
-            ficheiro.write(index+";"+nome+";"+desc+";"+Categorias+";"+data+";"+user+"\n")
-            ficheiro.close()
+        if not os.path.isfile("./files/albuns.txt"): # Confirma se o path existe, cria se nao
+            ficheiro = open("./files/albuns.txt","w")
+        else:
+            ficheiro = open("./files/albuns.txt","a")
+         # Abre o arquivo de texto onde serão registradas informações do álbum
+        ficheiro.write(str(index)+";"+nome+";"+desc+";"+Categorias+";"+data+";"+user+"\n")
+        ficheiro.close()
 
 
     def save_and_create_album(self):
         """ Guarda Imagens e cria um album """
-        index = self.save_images()  # Chama save_images diretamente para obter o índice
+        index = self.create_album_path()  # Chama save_images diretamente para obter o índice
+        self.save_images(index)
         data = date.datetime.now()
-        user = u1.autor_index()
+        user = str(u1.autor_index)
         Categorias= self.Categorias = str(self.cb_nature.get()) + str(self.cb_art.get()) + str(self.cb_cars.get()) + str(self.cb_food.get()) + str(self.cb_landscape.get()) + str(self.cb_others.get())
-        user = "adm"
-        self.save_file_album(self.entry_nome.get(), self.desc_txt.get(),Categorias, data.strftime("%d/%m/%Y"), user, index)
-
+        self.save_file_album(self.entry_nome.get(), self.desc_txt.get("1.0","end"),Categorias, data.strftime("%d/%m/%Y"), user, index)
+        messagebox.showinfo("Album Created!","Album created successfully")
+        #app.show(ProfilePage)
 
     def destroy(self):
         """ Destrói o quadro da Página de Criação de Album. """
 
         self.frame.destroy()
+# ---------- Profile Page ---------------
+class ProfilePage:
+    def __init__(self, app):
+        """ Inicia o layout do Profile. """
 
+        self.app = app
+        self.frame = tk.Frame(app.container)
+        self.frame.pack(fill=tk.BOTH, expand=True)
+
+    def destroy(self):
+        """ Destrói o quadro da Página de Criação de Album. """
+
+        self.frame.destroy()
 
 # ---------- Explore Page ---------------
 class ExplorePage:
@@ -394,6 +376,10 @@ class ExplorePage:
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
+    def destroy(self):
+        """ Destrói o quadro da Página de Explore. """
+
+        self.frame.destroy()
 
 # ---------- Notification Page ---------------
 class NotificationPage:
@@ -402,62 +388,12 @@ class NotificationPage:
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
+    def destroy(self):
+            """ Destrói o quadro da Página de Notification Page. """
+
+            self.frame.destroy()
 
 
 u1 = User_logged("0","user","","","")
 app = App()
 
-#     def create_album_path(self):
-#         """ Cria uma pasta para o álbum se não existir """
-#         if not os.path.exists("./Albuns"): # Confirma se o path existe, cria se nao
-
-#     def create_album_path(self):
-#         """ Cria uma pasta para o álbum se não existir """
-#         if not os.path.exists("./Albuns"): # Confirma se o path existe, cria se nao
-
-#     def cria_caminho_album(self):
-#         """
-#             Cria uma pasta para o album
-#         """
-#         if not os.path.exists("./Albuns"):#Confirms if the path exists, creates it if not
-#             os.mkdir("./Albuns")
-#         index = len(os.listdir("./Albuns"))+1#read how many albums you have and create the new index
-#         novo_album_dir=os.path.join("./Albuns",str(index))#make the path for the new album
-#         os.mkdir(novo_album_dir)
-#         return index#return index
-
-#     def guardar_album_ficheiro(self,nome,desc,Categorias,data,user,index):
-#         if not os.path.exists("./files/Albuns"):#Confirms if the path exists, creates it if not
-#             os.mkdir("./files/Albuns")
-#         ficheiro = open("./files/Albuns","a")
-#         ficheiro.write(index+";"+nome+";"+desc+";"+Categorias+";"+data+";"+user+"\n")
-#         ficheiro.close()
-
-#     def guardar(self):
-#         """
-#             Guarda Imagens e cria um album
-#         """
-#         index = self.cria_caminho_album()
-#         self.save_images(index)
-#         data = date.datetime.now() #get data
-#         user = "user"
-#         #user = u1.autor_index() #get name
-#         #user = Login().login() #recolher nome do autor3
-#         self.guardar_album_ficheiro(self.entry_nome.get(),self.desc_txt.get(),self.Categorias,data.strftime("%d/%m/%Y"),user,index)#guarda dados
-
-#     def add_img(self,index):
-#         print
-
-#     def remove_img(self,index):
-#         print
-
-#     def change_title(self,index):
-#         print
-
-#     def chage_desc(self,index):
-#         print
-
-#     def destroy(self):
-#         """ Destrói o quadro da Página de Criação de Album. """
-
-#         self.frame.destroy()
