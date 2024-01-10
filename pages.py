@@ -17,10 +17,29 @@ class App:
         self.container = tk.Frame(self.root)
         self.container.pack(fill=tk.BOTH, expand=True) # Configura o comportamento do Frame (self.container) dentro da janela principal (self.root), assegurando que o Frame ocupe e se ajuste dinamicamente ao tamanho da janela.
 
+        self.create_sidebar()
+
 
         self.menu = Menu(self)
         self.current = HomePage(self)
         self.root.mainloop()
+
+
+    def create_sidebar(self):
+        sidebar = tk.Frame(self.container, bg="gray", width=200)
+        sidebar.pack(fill="y", side="left")
+
+        btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(Profile))
+        btn_profile.pack(fill="x", padx=5, pady=5)
+
+        btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(Create_AlbumPage))
+        btn_profile.pack(fill="x", padx=5, pady=5)
+
+        btn_explore = tk.Button(sidebar, text="Explore", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(ExplorePage))
+        btn_explore.pack(fill="x", padx=5, pady=5)
+
+        btn_notifications = tk.Button(sidebar, text="Notifications", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(NotificationPage))
+        btn_notifications.pack(fill="x", padx=5, pady=5)
 
     def geometry(self):
         """ Define a geometria da janela principal da aplicação com base no tamanho do ecrã. """
@@ -61,7 +80,6 @@ class App:
     def notifications(self):
         print("Notifications")
 
-
 class Menu:
     def __init__(self, app):
         """ Inicia o menu e as suas opções.
@@ -83,26 +101,24 @@ class HomePage:
         Args:
         - app: A instância principal da aplicação. """
 
-        print(u1.mail)
-
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.pack(fill=tk.BOTH, expand=True)
 
-        sidebar = tk.Frame(self.frame, bg="gray", width=200)
-        sidebar.pack(fill="y", side="left")
+        # sidebar = tk.Frame(self.frame, bg="gray", width=200)
+        # sidebar.pack(fill="y", side="left")
 
-        btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: app.show(Profile))
-        btn_profile.pack(fill="x", padx=5, pady=5)
+        # btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: app.show(Profile))
+        # btn_profile.pack(fill="x", padx=5, pady=5)
 
-        btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: app.show(Create_AlbumPage))
-        btn_profile.pack(fill="x", padx=5, pady=5)
+        # btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: app.show(Create_AlbumPage))
+        # btn_profile.pack(fill="x", padx=5, pady=5)
 
-        btn_explore = tk.Button(sidebar, text="Explore", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.explore)
-        btn_explore.pack(fill="x", padx=5, pady=5)
+        # btn_explore = tk.Button(sidebar, text="Explore", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.explore)
+        # btn_explore.pack(fill="x", padx=5, pady=5)
 
-        btn_notifications = tk.Button(sidebar, text="Notifications", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.notifications)
-        btn_notifications.pack(fill="x", padx=5, pady=5)
+        # btn_notifications = tk.Button(sidebar, text="Notifications", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.notifications)
+        # btn_notifications.pack(fill="x", padx=5, pady=5)
 
     def destroy(self):
         """ Destrói o quadro da Página Inicial para exibir conteúdo dinâmico na abertura de outra janela. """
@@ -144,6 +160,7 @@ class LoginPage:
 
         botao_criar_conta = tk.Button(self.frame, text="Create Account", command=lambda: app.show(CreateAccountPage), width=15)
         botao_criar_conta.pack(pady=(5, 20))
+
 
     def destroy(self):
         """ Destrói o quadro da Página de Início de Sessão para exibir conteúdo dinâmico na abertura de outra janela. """
@@ -222,6 +239,7 @@ class CreateAccountPage:
         btn_create_account.grid(row=4, columnspan=2, pady=10)
 
 
+
     def destroy(self):
         """ Destrói o quadro da Página de Criação de Conta. """
 
@@ -252,20 +270,7 @@ class Profile:
         self.frame = tk.Frame(app.container)
         self.frame.pack(fill=tk.BOTH, expand=True)
 
-        sidebar = tk.Frame(self.frame, bg="gray", width=200)
-        sidebar.pack(fill="y", side="left")
-        btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: app.show(Profile))
-        btn_profile.pack(fill="x", padx=5, pady=5)
-
-        btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.create_album)
-        btn_profile.pack(fill="x", padx=5, pady=5)
-
-        btn_explore = tk.Button(sidebar, text="Explore", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.explore)
-        btn_explore.pack(fill="x", padx=5, pady=5)
-
-        btn_notifications = tk.Button(sidebar, text="Notifications", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.notifications)
-        btn_notifications.pack(fill="x", padx=5, pady=5)
-
+        app.create_sidebar()
 
     def destroy(self):
         """ Destrói o quadro da Página de Criação de Album. """
@@ -381,12 +386,26 @@ class Create_AlbumPage:
 
         self.frame.destroy()
 
-global u1
+
+# ---------- Explore Page ---------------
+class ExplorePage:
+    def __init__(self,app):
+        self.app = app
+        self.frame = tk.Frame(app.container)
+        self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+
+# ---------- Notification Page ---------------
+class NotificationPage:
+    def __init__(self,app):
+        self.app = app
+        self.frame = tk.Frame(app.container)
+        self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+
+
 u1 = User_logged("0","user","","","")
 app = App()
-
-
-
 
 #     def create_album_path(self):
 #         """ Cria uma pasta para o álbum se não existir """
@@ -442,5 +461,3 @@ app = App()
 #         """ Destrói o quadro da Página de Criação de Album. """
 
 #         self.frame.destroy()
-
-# app = App()
