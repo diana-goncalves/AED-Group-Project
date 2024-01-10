@@ -95,7 +95,7 @@ class HomePage:
         btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: app.show(Profile))
         btn_profile.pack(fill="x", padx=5, pady=5)
 
-        btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.create_album)
+        btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: app.show(Create_AlbumPage))
         btn_profile.pack(fill="x", padx=5, pady=5)
 
         btn_explore = tk.Button(sidebar, text="Explore", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=app.explore)
@@ -144,9 +144,6 @@ class LoginPage:
 
         botao_criar_conta = tk.Button(self.frame, text="Create Account", command=lambda: app.show(CreateAccountPage), width=15)
         botao_criar_conta.pack(pady=(5, 20))
-
-        botao_cancelar = tk.Button(self.frame, text="Cancel", width=15, command=lambda: app.show(HomePage))
-        botao_cancelar.pack(pady=(0,0))
 
     def destroy(self):
         """ Destrói o quadro da Página de Início de Sessão para exibir conteúdo dinâmico na abertura de outra janela. """
@@ -224,9 +221,6 @@ class CreateAccountPage:
         btn_create_account = tk.Button(self.frame, text="Create Account", command=self.create_account)
         btn_create_account.grid(row=4, columnspan=2, pady=10)
 
-        #Button Cancel
-        botao_cancelar = tk.Button(self.frame, text="Cancel", width=15, command=lambda: app.show(HomePage))
-        botao_cancelar.grid(row=5, columnspan=2, pady=10)
 
     def destroy(self):
         """ Destrói o quadro da Página de Criação de Conta. """
@@ -322,10 +316,6 @@ class Create_AlbumPage:
 
         btn_gravar = tk.Button(self.frame, text="Choose Images and Create Album!", width=30, height=5, command=self.save_and_create_album)
         btn_gravar.pack(pady=10)
-
-        #Button Cancel
-        botao_cancelar = tk.Button(self.frame, text="Cancel", width=15, command=lambda: app.show(HomePage))
-        botao_cancelar.pack(pady=(0,0))
 
     def save_images(self):
         """ Save Images """
