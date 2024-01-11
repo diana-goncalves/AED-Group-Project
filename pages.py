@@ -383,9 +383,8 @@ class ExplorePage:
         self.search_bar.pack(side= "top", anchor="n", pady=(0,5))
         self.search_button = tk.Button(self.frame, text="Search:", command=self.do_search)
         self.search_button.pack(side="top", anchor="e", pady=(10,0))
-
-
-        album_index = self.search_text 
+        
+        album_index = self.search_text #Atualmente só dá para procurar pelo index do album
         self.displayAlbum(self.frame, album_index)
 
     def do_search(self):
@@ -395,10 +394,14 @@ class ExplorePage:
         self.displayAlbum(self.frame, search_query)
 
     def displayAlbum(self,master,album_index):
+        
         album_path = f"./Albuns/{album_index}"
         images_dir = os.listdir(album_path)
         # Coloca as imagens do album numa lista
         image_files = []
+
+        row_val = 0
+        col_val = 0
         
         for image in images_dir:
             if image.endswith('.png'):
@@ -408,12 +411,18 @@ class ExplorePage:
         for image_file in image_files:
             img_path = os.path.join(album_path, image_file)
             img = Image.open(img_path)
-            img = img.resize((320, 300))
+            img = img.resize((240, 240))
             img_tk = ImageTk.PhotoImage(img)
 
             label = tk.Label(master, image=img_tk)
             label.image = img_tk  # Keep a reference to the image to prevent garbage collection
-            label.pack(expand=True, fill=tk.BOTH)
+            label.pack(side=tk.LEFT, padx=5, pady=5, anchor=tk.NW, in_=master, fill=tk.BOTH, expand=True)
+            #organizar as imagens
+            col_val += 1
+            if col_val > 2: #2 é o numero maximo de colunas
+                col_val = 0
+                row_val += 1
+
     def destroy(self):
         """ Destrói o quadro da Página de Explore. """
 
