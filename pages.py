@@ -375,7 +375,45 @@ class ExplorePage:
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        
+        """ Search Bar """
+        self.search_text = tk.StringVar()
+        
+        self.search_bar = tk.Entry(self.frame, width=100, textvariable=self.search_text)
+        self.search_bar.pack(side= "top", anchor="n", pady=(0,5))
+        self.search_button = tk.Button(self.frame, text="Search:", command=self.do_search)
+        self.search_button.pack(side="top", anchor="e", pady=(10,0))
 
+
+        album_index = self.search_text 
+        self.displayAlbum(self.frame, album_index)
+
+    def do_search(self):
+        # Receber pesquisa
+        search_query = self.search_text.get()
+        # Mostrar album baseado na pesquisa
+        self.displayAlbum(self.frame, search_query)
+
+    def displayAlbum(self,master,album_index):
+        album_path = f"./Albuns/{album_index}"
+        images_dir = os.listdir(album_path)
+        # Coloca as imagens do album numa lista
+        image_files = []
+        
+        for image in images_dir:
+            if image.endswith('.png'):
+                image_files.append(image)
+
+        # Mostrar as imagens da lista
+        for image_file in image_files:
+            img_path = os.path.join(album_path, image_file)
+            img = Image.open(img_path)
+            img = img.resize((320, 300))
+            img_tk = ImageTk.PhotoImage(img)
+
+            label = tk.Label(master, image=img_tk)
+            label.image = img_tk  # Keep a reference to the image to prevent garbage collection
+            label.pack(expand=True, fill=tk.BOTH)
     def destroy(self):
         """ Destrói o quadro da Página de Explore. """
 
