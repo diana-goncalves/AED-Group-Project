@@ -4,7 +4,6 @@ from PIL import Image, ImageTk
 import os
 import datetime as date
 
-
 class App:
     def __init__(self):
         """ Inicia a janela principal da aplicação e as configurações básicas. """
@@ -185,7 +184,13 @@ class LoginPage:
         for i in range(len(users)):
             if str(self.user_email.get()) == str(users[i][1].strip()) and str(self.user_senha.get()) == str(users[i][2].strip()):
                 messagebox.showinfo("Login", "Successful Login")
-                print(u1.mail)
+                # Actualização dos dados do user
+                user.autor_index = users[i][0].strip()
+                user.mail = users[i][1].strip()
+                user.senha = users[i][2].strip()
+                user.first_name = users[i][3].strip()
+                user.last_name = users[i][4].strip()
+                #
                 self.app.show(HomePage)
                 self.app.root.update_idletasks()
                 return
@@ -249,6 +254,10 @@ class CreateAccountPage:
 class CreateAlbumPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Criação de Conta. """
+        # if user.mail == "user":
+        #     messagebox.showerror("Need Account","Please log in or create an account to access")
+        #     app.show(HomePage)
+        # else:
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
@@ -267,18 +276,15 @@ class CreateAlbumPage:
         ctg_frame = tk.LabelFrame(self.frame, text="Categories:", width=260, height=130, relief="sunken")
         ctg_frame.pack(pady=15)
 
-        self.cb_nature = tk.IntVar()
-        self.cb_art = tk.IntVar()
-        self.cb_cars = tk.IntVar()
-        self.cb_food = tk.IntVar()
-        self.cb_landscape = tk.IntVar()
-        self.cb_others = tk.IntVar()
-        self.cb1 = tk.Checkbutton(ctg_frame, text="Nature", variable=self.cb_nature)
-        self.cb2 = tk.Checkbutton(ctg_frame, text="Art", variable=self.cb_art)
-        self.cb3 = tk.Checkbutton(ctg_frame, text="Cars", variable=self.cb_cars)
-        self.cb4 = tk.Checkbutton(ctg_frame, text="Food", variable=self.cb_food)
-        self.cb5 = tk.Checkbutton(ctg_frame, text="Landscape", variable=self.cb_landscape)
-        self.cb6 = tk.Checkbutton(ctg_frame, text="Others", variable=self.cb_others)
+        # Var selected
+        self.selected = tk.StringVar()
+        #Radio Button
+        self.cb1 = tk.Radiobutton(ctg_frame, text="Nature", value="nature",variable=self.selected)
+        self.cb2 = tk.Radiobutton(ctg_frame, text="Art", value="art",variable=self.selected)
+        self.cb3 = tk.Radiobutton(ctg_frame, text="Cars", value="cars",variable=self.selected)
+        self.cb4 = tk.Radiobutton(ctg_frame, text="Food", value="food",variable=self.selected)
+        self.cb5 = tk.Radiobutton(ctg_frame, text="Landscape", value="landscape",variable=self.selected)
+        self.cb6 = tk.Radiobutton(ctg_frame, text="Others", value="others",variable=self.selected)
         self.cb1.place(x=35, y=10)
         self.cb2.place(x=35, y=40)
         self.cb3.place(x=35, y=70)
@@ -286,12 +292,14 @@ class CreateAlbumPage:
         self.cb5.place(x=150, y=40)
         self.cb6.place(x=150, y=70)
 
-        btn_gravar = tk.Button(self.frame, text="Choose Images and Create Album!", width=30, height=5, command=self.save_and_create_album)
+            
+
+        btn_gravar = tk.Button(self.frame, text="Choose Images and Create Album!", width=30,height=5, command=self.save_and_create_album)
         btn_gravar.pack(pady=10)
 
-    def create_album_path(self):
+    def create_album_path(self):#cria a pasta para o album e retorna o index
         """
-            Create path to a new albu 
+            Create path to a new album
         """
         if not os.path.exists("./Albuns"):#Confirms if the path exists, creates it if not
             os.mkdir("./Albuns")
@@ -300,7 +308,7 @@ class CreateAlbumPage:
         os.mkdir(novo_album_dir)
         return index#return index
 
-    def save_images(self,index):
+    def save_images(self,index):#pede as imagens ao utilizador e as guarda
         """ Save Images """
 
         caminhos = filedialog.askopenfilenames(
@@ -316,6 +324,7 @@ class CreateAlbumPage:
         if caminhos == "":
             messagebox.showerror("Error", "No image inserted. Insert at least 1 image!")
             os.rmdir(destino_dir)
+            return "cancel"
         else:
             i = 0
             # Itera sobre os caminhos dos arquivos selecionados
@@ -327,8 +336,9 @@ class CreateAlbumPage:
                 # Abre a imagem selecionada com o módulo PIL e salva-a no novo caminho
                 imagem_pil = Image.open(caminho)
                 imagem_pil.save(novo_caminho)
+        return
    
-    def save_file_album(self,nome,desc,Categorias,data,user,index):
+    def save_file_album(self,nome,desc,Categorias,data,user_index,index):#guarda os dados do album
         """ Cria um diretório para os arquivos do álbum se não existir """
 
         if not os.path.isfile("./files/albuns.txt"): # Confirma se o path existe, cria se nao
@@ -336,20 +346,24 @@ class CreateAlbumPage:
         else:
             ficheiro = open("./files/albuns.txt","a")
          # Abre o arquivo de texto onde serão registradas informações do álbum
-        ficheiro.write(str(index)+";"+nome+";"+desc+";"+Categorias+";"+data+";"+user+"\n")
+        ficheiro.write(str(index)+";"+nome+";"+desc+";"+Categorias+";"+data+";"+user_index+"\n")
         ficheiro.close()
 
 
     def save_and_create_album(self):
         """ Guarda Imagens e cria um album """
+        if self.selected.get() == "":
+            messagebox.showerror("Error Categories","Need to selectthe category,\n try again")
+            return
         index = self.create_album_path()  # Chama save_images diretamente para obter o índice
-        self.save_images(index)
+        aux_img = self.save_images(index)#retorma uma var que ajuda a saber se ouve problema no processo
+        if aux_img == "cancel":# se sim, para processo
+            return
         data = date.datetime.now()
-        user = str(u1.autor_index)
-        Categorias= self.Categorias = str(self.cb_nature.get()) + str(self.cb_art.get()) + str(self.cb_cars.get()) + str(self.cb_food.get()) + str(self.cb_landscape.get()) + str(self.cb_others.get())
-        self.save_file_album(self.entry_nome.get(), self.desc_txt.get("1.0","end"),Categorias, data.strftime("%d/%m/%Y"), user, index)
+        user_index = str(user.autor_index)
+        self.save_file_album(self.entry_nome.get(), self.desc_txt.get("1.0", "end-1c"), self.selected.get(), data.strftime("%d/%m/%Y"), user_index, index)
         messagebox.showinfo("Album Created!","Album created successfully")
-        #app.show(ProfilePage)
+        self.app.show(ProfilePage)
 
     def destroy(self):
         """ Destrói o quadro da Página de Criação de Album. """
@@ -384,11 +398,12 @@ class ExplorePage:
         self.search_button = tk.Button(self.frame, text="Search:", command=self.do_search)
         self.search_button.pack(side="top", anchor="e", pady=(10,0))
         
-        album_index = self.search_text #Atualmente só dá para procurar pelo index do album
-        self.displayAlbum(self.frame, album_index)
+        
 
     def do_search(self):
         # Receber pesquisa
+        album_index = self.search_text #Atualmente só dá para procurar pelo index do album
+        self.displayAlbum(self.frame, album_index)
         search_query = self.search_text.get()
         # Mostrar album baseado na pesquisa
         self.displayAlbum(self.frame, search_query)
@@ -441,6 +456,8 @@ class NotificationPage:
             self.frame.destroy()
 
 
-u1 = User_logged("0","user","","","")
+global user
+user = User_logged("0","user","","","")
+global app
 app = App()
 
