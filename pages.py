@@ -105,8 +105,41 @@ class HomePage:
         # frame criado para que as imagens não interfiram com a side bar
         self.image_frame = tk.Frame(self.frame, width=400, height=100)
         self.image_frame.pack(side="top", pady=5)
-    
-       
+
+        self.displayAlbuns()
+     
+    def displayAlbuns(self):
+        album_path = "./Albuns"
+        albuns_list = os.listdir(album_path)
+
+        row_val = 0
+        col_val = 0
+
+        for album_index in albuns_list:
+            current_album_path = os.path.join(album_path, album_index) #percorrer os albuns dentro da pasta Albuns
+            images_dir = os.listdir(current_album_path)
+
+            first_image = None
+            for image in images_dir:
+                if image.endswith('.png'):                             #Encontrar a primeira imagem dentro de cada Album
+                    first_image = image
+                    break
+            if first_image:                                            #Colocar a imagem
+                img_path = os.path.join(current_album_path, first_image)
+                img = Image.open(img_path)
+                img = img.resize((240,240))
+                img_Tk = ImageTk.PhotoImage(img)
+
+                label = tk.Label(self.image_frame, image=img_Tk,width=240, height=240 )
+                label.image = img_Tk
+                label.grid(row=row_val, column=col_val, padx=5, pady=5, sticky="nw")
+            
+            """ Gerir grid """
+            col_val +=1
+            if col_val >= 3:                                            #Mudar o 3 se quiserem mais colunas
+                col_val = 0
+                row_val += 1
+
     def destroy(self):
         """ Destrói o quadro da Página Inicial para exibir conteúdo dinâmico na abertura de outra janela. """
         self.frame.destroy()
@@ -444,6 +477,7 @@ class ExplorePage:
             label.image = img_tk 
             label.grid(row=row_val, column=col_val, padx=5, pady=5, sticky="nw")
             
+            """ Gerir grid """
             col_val += 1
             if col_val >= 3:  #numero de colunas
                 col_val = 0
