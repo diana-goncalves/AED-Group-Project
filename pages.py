@@ -106,55 +106,7 @@ class HomePage:
         self.image_frame = tk.Frame(self.frame, width=400, height=100)
         self.image_frame.pack(side="top", pady=5)
     
-        #variavel que guarda a primeira imagem de cada album 
-        self.showcase = []
-
-    def albumShowcase(self):
-        albuns_path = ("./Albuns")
-        if not os.path.exists("./Albuns"): #confirmar se existe a pasta albuns
-            os.mkdir("./Albuns")
-        
-        albuns = os.listdir(albuns_path)
-
-        for album_path in albuns:
-            album_path = os.path.join(albuns_path,album_path)
-
-            images = []
-            for img in album_path:
-                if img.endswith(("png files", "*.png"), ("gif files", "*.gif"), ("all files", "*.*")):
-                    images.append(img)
-                    if len(images)>=0:
-                        first_image = os.path.join(album_path, images[0])
-                        self.showcase.append((album_path,first_image))
-            
-        return self.showcase
-    
-    def displayAlbum(self, showcase):
-        albuns_path = ("./Albuns")
-
-        image_files = []
-        for image in showcase:
-            if image.endswith('.png'):
-                image_files.append(image)
-
-        row_val = 0
-        col_val = 0
-
-        for image_file in image_files:
-            img_path = os.path.join(albuns_path, image_file)
-            img = Image.open(img_path)
-            img = img.resize((240, 240))
-            img_tk = ImageTk.PhotoImage(img)
-
-            label = tk.Label(self.image_frame, image=img_tk, width=240, height=240)
-            label.image = img_tk 
-            label.grid(row=row_val, column=col_val, padx=5, pady=5, sticky="nw")
-            
-            col_val += 1
-            if col_val >= 3:  #numero de colunas
-                col_val = 0
-                row_val += 1
-
+       
     def destroy(self):
         """ Destrói o quadro da Página Inicial para exibir conteúdo dinâmico na abertura de outra janela. """
         self.frame.destroy()
