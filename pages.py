@@ -391,53 +391,58 @@ class ExplorePage:
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         
         """ Search Bar """
+        #frame para colocar a search bar e respetivo botão
+        self.search_frame = tk.Frame(self.frame)
+        self.search_frame.pack(side="top", pady=(0,5))
+        #variavel que guarda o texto da search bar
         self.search_text = tk.StringVar()
-        
-        self.search_bar = tk.Entry(self.frame, width=100, textvariable=self.search_text)
-        self.search_bar.pack(side= "top", anchor="n", pady=(0,5))
-        self.search_button = tk.Button(self.frame, text="Search:", command=self.do_search)
-        self.search_button.pack(side="top", anchor="e", pady=(10,0))
-        
-        
 
+        self.search_bar = tk.Entry(self.search_frame, width=100, textvariable=self.search_text)
+        self.search_bar.pack(side= "left")
+
+        self.search_button = tk.Button(self.search_frame, text="Search:", command=self.do_search)
+        self.search_button.pack(side="left")
+        
+        """ Image frame """
+        # frame criado para que as imagens não interfiram com a side bar
+        self.image_frame = tk.Frame(self.frame, width=400, height=100)
+        self.image_frame.pack(side="top", pady=5)
+        
     def do_search(self):
         # Receber pesquisa
-        album_index = self.search_text #Atualmente só dá para procurar pelo index do album
-        self.displayAlbum(self.frame, album_index)
         search_query = self.search_text.get()
         # Mostrar album baseado na pesquisa
-        self.displayAlbum(self.frame, search_query)
+        self.displayAlbum(search_query)
 
-    def displayAlbum(self,master,album_index):
+    def displayAlbum(self, album_index):
         
         album_path = f"./Albuns/{album_index}"
         images_dir = os.listdir(album_path)
+        
         # Coloca as imagens do album numa lista
         image_files = []
-
-        row_val = 0
-        col_val = 0
-        
         for image in images_dir:
             if image.endswith('.png'):
                 image_files.append(image)
 
-        # Mostrar as imagens da lista
+        row_val = 0
+        col_val = 0
+
         for image_file in image_files:
             img_path = os.path.join(album_path, image_file)
             img = Image.open(img_path)
             img = img.resize((240, 240))
             img_tk = ImageTk.PhotoImage(img)
 
-            label = tk.Label(master, image=img_tk)
-            label.image = img_tk  # Keep a reference to the image to prevent garbage collection
-            label.pack(side=tk.LEFT, padx=5, pady=5, anchor=tk.NW, in_=master, fill=tk.BOTH, expand=True)
-            #organizar as imagens
+            label = tk.Label(self.image_frame, image=img_tk, width=240, height=240)
+            label.image = img_tk 
+            label.grid(row=row_val, column=col_val, padx=5, pady=5, sticky="nw")
+            
             col_val += 1
-            if col_val > 2: #2 é o numero maximo de colunas
+            if col_val >= 3:  #numero de colunas
                 col_val = 0
                 row_val += 1
-
+    
     def destroy(self):
         """ Destrói o quadro da Página de Explore. """
 
