@@ -17,6 +17,7 @@ class App:
         self.container.pack(fill=tk.BOTH, expand=True) # Configura o comportamento do Frame (self.container) dentro da janela principal (self.root), assegurando que o Frame ocupe e se ajuste dinamicamente ao tamanho da janela.
 
         self.create_sidebar()
+        self.user_manager = UserManager()
 
 
         self.menu = Menu(self)
@@ -66,15 +67,6 @@ class App:
         self.current.destroy()
         self.current = page(self)
 
-    def explore(self):
-        print("Explore")
-
-    def profile(self):
-        print("Profile")
-
-    def notifications(self):
-        print("Notifications")
-
 class Menu:
     def __init__(self, app):
         """ Inicia o menu e as suas opções.
@@ -107,7 +99,7 @@ class HomePage:
         self.image_frame.pack(side="top", pady=5)
 
         self.displayAlbuns()
-     
+
     def displayAlbuns(self):
         album_path = "./Albuns"
         albuns_list = os.listdir(album_path)
@@ -116,15 +108,15 @@ class HomePage:
         col_val = 0
 
         for album_index in albuns_list:
-            current_album_path = os.path.join(album_path, album_index) #percorrer os albuns dentro da pasta Albuns
+            current_album_path = os.path.join(album_path, album_index) # Percorre os albuns dentro da pasta Albuns
             images_dir = os.listdir(current_album_path)
 
             first_image = None
             for image in images_dir:
-                if image.endswith('.png'):                             #Encontrar a primeira imagem dentro de cada Album
+                if image.endswith('.png'):                             # Encontra a primeira imagem dentro de cada Album
                     first_image = image
                     break
-            if first_image:                                            #Colocar a imagem
+            if first_image:                                            # Coloca a imagem
                 img_path = os.path.join(current_album_path, first_image)
                 img = Image.open(img_path)
                 img = img.resize((240,240))
@@ -133,16 +125,49 @@ class HomePage:
                 label = tk.Label(self.image_frame, image=img_Tk,width=240, height=240 )
                 label.image = img_Tk
                 label.grid(row=row_val, column=col_val, padx=5, pady=5, sticky="nw")
-            
+
             """ Gerir grid """
             col_val +=1
-            if col_val >= 3:                                            #Mudar o 3 se quiserem mais colunas
+            if col_val >= 3:                                            # Mudar o 3 se quiserem mais colunas
                 col_val = 0
                 row_val += 1
+                row_val += 2
+
 
     def destroy(self):
         """ Destrói o quadro da Página Inicial para exibir conteúdo dinâmico na abertura de outra janela. """
         self.frame.destroy()
+
+
+# ---------- User management ---------------    NOVO!!!
+class UserManager:
+    def __init__(self):
+        self.users = []
+        self.load_users()
+
+    def load_users(self):
+        """ Carrega informações dos user do arquivo users.txt """
+        if not os.path.exists("./files/users.txt"):
+            return
+        with open("./files/users.txt", "r") as file:
+            for line in file:
+                parts = line.strip().split(";")
+                user = User_logged(parts[0], parts[1], parts[2], parts[3], parts[4])
+                self.users.append(user)
+
+    def save_user(self, user):
+        """ Guarda as informações do user no arquivo users.txt """
+        with open("./files/users.txt", "a") as file:
+            file.write(f"{user.autor_index};{user.mail};{user.senha};{user.first_name};{user.last_name}\n")
+
+    def create_user(self, mail, senha, first_name, last_name):
+        """ Cria um novo user e guarda suas informações """
+        index = str(len(self.users) + 1)
+        user = User_logged(index, mail, senha, first_name, last_name)
+        self.users.append(user)
+        self.save_user(user)
+        return user
+
 
 class User_logged:
     def __init__(self,index,mail,senha,first_name,last_name):
@@ -151,9 +176,11 @@ class User_logged:
         self.senha = senha
         self.first_name = first_name
         self.last_name = last_name
+        self.albums = []  # lista para armazenar os álbuns do user para exibir no ProfilePage
+
 
 # ---------- Login Page ---------------
-        
+
 class LoginPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Início de Sessão. """
@@ -203,7 +230,6 @@ class LoginPage:
         self.create_file()
         #index;email;pass;firstname;surname
         users = []
-        i = 0
         ficheiro = open("./files/users.txt", "r")
         linhas = ficheiro.readlines()
         for linha in linhas:
@@ -211,19 +237,18 @@ class LoginPage:
             linha = linha.split(";")
             linha[4] = linha[4].replace("\n", "")
             for j in range(5):
-                users[i].append(linha[j])
-                i += 1
+                users[-1].append(linha[j])
         ficheiro.close()
         return users
 
     def login(self):
         """ Realiza a ação de início de sessão e verifica as credenciais do utilizador. """
-        users = self.read_InfoUser() # Lê os users
+        users = self.read_InfoUser()  # Lê os usuários
 
         for i in range(len(users)):
             if str(self.user_email.get()) == str(users[i][1].strip()) and str(self.user_senha.get()) == str(users[i][2].strip()):
                 messagebox.showinfo("Login", "Successful Login")
-                # Actualização dos dados do user
+                # Atualização dos dados do usuário
                 user.autor_index = users[i][0].strip()
                 user.mail = users[i][1].strip()
                 user.senha = users[i][2].strip()
@@ -272,22 +297,21 @@ class CreateAccountPage:
 
         self.frame.destroy()
 
-    def create_account(self):
+    def create_account(self):             # Alterado devido à nova class UserManager !!!!
         """ Cria uma conta de utilizador com base nas informações inseridas. """
-
         # Obter valores dos campos de entrada
         first_name = self.entry_first_name.get()
         last_name = self.entry_last_name.get()
         email = self.entry_email.get()
         password = self.entry_password.get()
-        ficheiro = open("./files/users.txt","r+")
-        index = len(ficheiro.readlines())+1
-        ficheiro.write("%s;%s;%s;%s;%s\n"%(str(index),email, password,first_name,last_name))
-        ficheiro.close()
-        # Para efeitos de demonstração, apenas apresentar os dados introduzidos numa caixa de mensagem
-        messagebox.showinfo("Create Profile", "First Name: {0}\nLast Name: {1}\nEmail: {2}\nPassword: {3}". format(first_name,last_name, email, password))
+
+        # Criar um user através do UserManager
+        user = self.app.user_manager.create_user(email, password, first_name, last_name)
+
+        messagebox.showinfo("Create Profile", "User created successfully:\nEmail: {0}\nPassword: {1}".format(email,password))
 
         self.app.show(HomePage)
+
 
 # ---------- Create Album Page ---------------
 class CreateAlbumPage:
@@ -331,25 +355,21 @@ class CreateAlbumPage:
         self.cb5.place(x=150, y=40)
         self.cb6.place(x=150, y=70)
 
-            
-
         btn_gravar = tk.Button(self.frame, text="Choose Images and Create Album!", width=30,height=5, command=self.save_and_create_album)
         btn_gravar.pack(pady=10)
 
-    def create_album_path(self):#cria a pasta para o album e retorna o index
+    def create_album_path(self): # Cria a pasta para o album e retorna o index
         """
             Create path to a new album
         """
-        if not os.path.exists("./Albuns"):#Confirms if the path exists, creates it if not
+        if not os.path.exists("./Albuns"): #Confirma se o path existe, cria se não existir
             os.mkdir("./Albuns")
-        index = len(os.listdir("./Albuns"))+1#read how many albums you have and create the new index
-        novo_album_dir=os.path.join("./Albuns",str(index))#make the path for the new album
+        index = len(os.listdir("./Albuns"))+1 # Lê quantos albuns existem e cria novo index
+        novo_album_dir=os.path.join("./Albuns",str(index)) #Cria um caminho para o novo album
         os.mkdir(novo_album_dir)
-        return index#return index
+        return index # Returna index
 
-    def save_images(self,index):#pede as imagens ao utilizador e as guarda
-        """ Save Images """
-
+    def save_images(self,index): # Pede as imagens ao utilizador e guarda-as
         caminhos = filedialog.askopenfilenames(
             title="Select Image",
             initialdir="./images",
@@ -376,8 +396,8 @@ class CreateAlbumPage:
                 imagem_pil = Image.open(caminho)
                 imagem_pil.save(novo_caminho)
         return
-   
-    def save_file_album(self,nome,desc,Categorias,data,user_index,index):#guarda os dados do album
+
+    def save_file_album(self,nome,desc,Categorias,data,user_index,index): # Guarda os dados do album
         """ Cria um diretório para os arquivos do álbum se não existir """
 
         if not os.path.isfile("./files/albuns.txt"): # Confirma se o path existe, cria se nao
@@ -391,18 +411,24 @@ class CreateAlbumPage:
 
     def save_and_create_album(self):
         """ Guarda Imagens e cria um album """
-        if self.selected.get() == "":
-            messagebox.showerror("Error Categories","Need to selectthe category,\n try again")
-            return
-        index = self.create_album_path()  # Chama save_images diretamente para obter o índice
-        aux_img = self.save_images(index)#retorma uma var que ajuda a saber se ouve problema no processo
-        if aux_img == "cancel":# se sim, para processo
-            return
-        data = date.datetime.now()
-        user_index = str(user.autor_index)
-        self.save_file_album(self.entry_nome.get(), self.desc_txt.get("1.0", "end-1c"), self.selected.get(), data.strftime("%d/%m/%Y"), user_index, index)
-        messagebox.showinfo("Album Created!","Album created successfully")
-        self.app.show(ProfilePage)
+        try:
+            if self.selected.get() == "":
+                messagebox.showerror("Error Categories", "Need to select the category,\n try again")
+                return
+
+            index = self.create_album_path()  # Chama save_images diretamente para obter o índice
+            aux_img = self.save_images(index)  # retorma uma var que ajuda a saber se ocorreu problema no processo
+            if aux_img == "cancel":  # se sim, pára o processo
+                return
+            data = date.datetime.now()
+            user_index = str(user.autor_index)
+            self.save_file_album(self.entry_nome.get(), self.desc_txt.get("1.0", "end-1c"), self.selected.get(),
+                                  data.strftime("%d/%m/%Y"), user_index, index)
+            user.albums.append((index, self.entry_nome.get()))
+            messagebox.showinfo("Album Created!", "Album created successfully")
+            self.app.show(ProfilePage)
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
     def destroy(self):
         """ Destrói o quadro da Página de Criação de Album. """
@@ -417,6 +443,36 @@ class ProfilePage:
         self.frame = tk.Frame(app.container)
         self.frame.pack(fill=tk.BOTH, expand=True)
 
+        for album_info in user.albums:
+            album_index, album_name = album_info
+            label = tk.Label(self.frame, text="Album {0}: {1}".format(album_index, album_name))
+            label.pack()
+
+            # Exibe imagens para cada álbum
+            self.display_images_for_album(album_index)
+
+    def display_images_for_album(self, album_index):
+        album_path = f"./Albuns/{album_index}"
+        images_dir = os.listdir(album_path)
+
+        # Coloca as imagens do álbum numa lista
+        image_files = []
+        for image in images_dir:
+            if image.endswith('.png'):
+                image_files.append(image)
+
+        # Exibe as imagens
+        for image_file in image_files:
+            img_path = os.path.join(album_path, image_file)
+            img = Image.open(img_path)
+            img = img.resize((240, 240))
+            img_tk = ImageTk.PhotoImage(img)
+
+            label = tk.Label(self.frame, image=img_tk, width=240, height=240)
+            label.image = img_tk
+            label.pack(padx=5, pady=5, anchor="nw")
+
+
     def destroy(self):
         """ Destrói o quadro da Página de Criação de Album. """
 
@@ -428,7 +484,7 @@ class ExplorePage:
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
-        
+
         """ Search Bar """
         #frame para colocar a search bar e respetivo botão
         self.search_frame = tk.Frame(self.frame)
@@ -441,23 +497,26 @@ class ExplorePage:
 
         self.search_button = tk.Button(self.search_frame, text="Search:", command=self.do_search)
         self.search_button.pack(side="left")
-        
+
         """ Image frame """
         # frame criado para que as imagens não interfiram com a side bar
         self.image_frame = tk.Frame(self.frame, width=400, height=100)
         self.image_frame.pack(side="top", pady=5)
-        
+
     def do_search(self):
-        # Receber pesquisa
+        # Recebe pesquisa
         search_query = self.search_text.get()
         # Mostrar album baseado na pesquisa
         self.displayAlbum(search_query)
 
     def displayAlbum(self, album_index):
-        
+        # Limpa imagens existentes na image_frame
+        for widget in self.image_frame.winfo_children():
+            widget.destroy()
+
         album_path = f"./Albuns/{album_index}"
         images_dir = os.listdir(album_path)
-        
+
         # Coloca as imagens do album numa lista
         image_files = []
         for image in images_dir:
@@ -474,15 +533,15 @@ class ExplorePage:
             img_tk = ImageTk.PhotoImage(img)
 
             label = tk.Label(self.image_frame, image=img_tk, width=240, height=240)
-            label.image = img_tk 
+            label.image = img_tk
             label.grid(row=row_val, column=col_val, padx=5, pady=5, sticky="nw")
-            
+
             """ Gerir grid """
             col_val += 1
             if col_val >= 3:  #numero de colunas
                 col_val = 0
                 row_val += 1
-    
+
     def destroy(self):
         """ Destrói o quadro da Página de Explore. """
 
@@ -502,6 +561,6 @@ class NotificationPage:
 
 
 global user
-user = User_logged("0","user","","","")
+user = User_logged("0", "user", "", "", "")
 global app
 app = App()
