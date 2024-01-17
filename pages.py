@@ -561,25 +561,25 @@ class AlbumPage:
         self.images_dir = os.listdir(album_path)
         self.app = app
         self.frame = tk.Frame(app.container)
-        self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
-         # frame das imagens
-        self.images_frame = tk.Frame(self.frame, bg="white", width=400, height = 250 )
-        self.images_frame.pack(side="right")
+        self.frame.pack(side="top",anchor="center")
+        # frame auxiliar para organização
+        self.container = tk.Frame(self.frame, width=1080)
+        self.container.pack(side="top", anchor="center")
+        # frame das imagens
+        self.images_frame = tk.Frame(self.container, bg="white", width=240, height = 350 )
+        self.images_frame.pack(side="right", anchor="center", padx=100)
+        # botões de avançar e retroceder 
+        self.avancar = tk.Button(self.container,text=">", command=self.next_image, width=6)
+        self.avancar.pack(side="right", padx=1, anchor="s")
+        self.retroceder = tk.Button(self.container,text="<", command=self.prev_image, width=6)
+        self.retroceder.pack(side="left", padx=1, anchor="s")
         #  lista com as paths da imagem
-        self.list = tk.Listbox(self.frame, bg="white", width=50, height= 12)
-        self.list.pack(side="left", padx=100)                                                       # MUDAR POSIÇÃO
-        # frame para os botões de multimédia
-        self.button_frame = tk.Frame(self.frame, width=100, height=200, bg="grey")
-        self.button_frame.pack(side="bottom")
-        self.button_frame.pack_propagate(False)
+        self.list = tk.Listbox(self.container, bg="white", width=200, height= 15)
+        self.list.pack(side="top", padx=12)                                                      
         # botao para remover imagem selecionada       
-        self.remover = tk.Button(self.button_frame, width=10, height=2, text="remove image", command=self.remover_imagens)
-        self.remover.pack(side="bottom", anchor="s")
-        #botões de avançar e retroceder 
-        self.avancar = tk.Button(self.button_frame,text=">", command=self.next_image)
-        self.avancar.pack(side="top", padx=2)
-        self.retroceder = tk.Button(self.button_frame,text="<", command=self.prev_image)
-        self.retroceder.pack(side="top", padx=2)
+        self.remover = tk.Button(self.container, width=10, height=2, text="remove image", command=self.remover_imagens)
+        self.remover.pack(side="bottom", anchor="center")
+        
 
         
         self.lista()
@@ -609,7 +609,7 @@ class AlbumPage:
 
             # Resize imagem
             img = Image.open(img_path)
-            img = img.resize((300, 200))
+            img = img.resize((600, 350))
 
             img_tk = ImageTk.PhotoImage(img)
 
