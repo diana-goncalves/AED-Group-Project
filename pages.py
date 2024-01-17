@@ -97,7 +97,10 @@ class HomePage:
         # frame criado para que as imagens não interfiram com a side bar
         self.image_frame = tk.Frame(self.frame, width=400, height=100)
         self.image_frame.pack(side="top", pady=5)
-
+        #testar pagina album
+        self.teste = tk.Button(self.frame, text="Testar", command=lambda: app.show(AlbumPage))
+        self.teste.pack(side="top")
+        
         self.displayAlbuns()
 
     def displayAlbuns(self):
@@ -546,7 +549,98 @@ class ExplorePage:
         """ Destrói o quadro da Página de Explore. """
 
         self.frame.destroy()
+# ---------- AlbumPage ---------------
+class AlbumPage:
+    album_path = "./Albuns/1" #trocar para receber path do album clicado
+    images_dir = os.listdir(album_path)
+    current_index = 0
+    
+    def __init__(self,app):
+        self.app = app
+        self.frame = tk.Frame(app.container)
+        self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+         # frame das imagens
+        self.images_frame = tk.Frame(self.frame, bg="white", width=400, height = 250 )
+        self.images_frame.pack(side="right")
+        #  lista com as paths da imagem
+        self.list = tk.Listbox(self.frame, bg="white", width=50, height= 12)
+        self.list.pack(side="left", padx=100)                                                       # MUDAR POSIÇÃO
+        # frame para os botões de multimédia
+        self.button_frame = tk.Frame(self.frame, width=100, height=200, bg="grey")
+        self.button_frame.pack(side="bottom")
+        self.button_frame.pack_propagate(False)
+        # botao para remover imagem selecionada       
+        self.remover = tk.Button(self.button_frame, width=10, height=2, text="remove image", command=self.remover_imagens)
+        self.remover.pack(side="bottom", anchor="s")
+        #botões de avançar e retroceder 
+        self.avancar = tk.Button(self.button_frame,text=">", command=self.next_image)
+        self.avancar.pack(side="top", padx=2)
+        self.retroceder = tk.Button(self.button_frame,text="<", command=self.prev_image)
+        self.retroceder.pack(side="top", padx=2)
 
+        
+        self.lista()
+        self.ver_imagens()
+
+    #adcionar paths à listbox
+    def lista(self):
+        for path in self.images_dir:
+            self.list.insert("end",path)
+    #remover imagem selecionada na listbox
+    def remover_imagens(self):
+        imagens_selecionadas = self.list.curselection()
+
+        if imagens_selecionadas:
+            for image in reversed(imagens_selecionadas):
+                self.list.delete(image)
+        else:
+            messagebox.showwarning("ERROR", "Please select an item to remove.")
+    #mostrar imagens
+    def ver_imagens(self):
+        imagens = self.images_dir
+
+        if imagens:
+            # path da imagem atual
+            img_name = imagens[self.current_index]
+            img_path = os.path.join("./Albuns/1", img_name)
+
+            # Resize imagem
+            img = Image.open(img_path)
+            img = img.resize((300, 200))
+
+            img_tk = ImageTk.PhotoImage(img)
+
+            # Apagar foto anterior
+            for widget in self.images_frame.winfo_children():
+                widget.destroy()
+            
+            # Label para as imagens
+            label = tk.Label(self.images_frame, image=img_tk, bg="Grey")
+            label.image = img_tk  
+            label.pack(side="left", padx=5)   
+
+    def next_image(self):
+        imagens = self.images_dir
+
+        if self.current_index < len(imagens) - 1:
+            self.current_index += 1
+        else:
+            messagebox.showinfo("End of List", "No more images to display.")
+        self.ver_imagens()
+
+    def prev_image(self):
+        if self.current_index > 0:
+            self.current_index -= 1
+        else:
+            messagebox.showinfo("Start of List", "Already at the first image.")
+        self.ver_imagens() 
+
+
+
+    def destroy(self):
+            """ Destrói o quadro da Página de Notification Page. """
+
+            self.frame.destroy()
 # ---------- Notification Page ---------------
 class NotificationPage:
     def __init__(self,app):
