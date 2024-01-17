@@ -106,6 +106,7 @@ class HomePage:
     def displayAlbuns(self):
         album_path = "./Albuns"
         albuns_list = os.listdir(album_path)
+        
 
         row_val = 0
         col_val = 0
@@ -128,6 +129,7 @@ class HomePage:
                 label = tk.Label(self.image_frame, image=img_Tk,width=240, height=240 )
                 label.image = img_Tk
                 label.grid(row=row_val, column=col_val, padx=5, pady=5, sticky="nw")
+                label.bind("<Button-1>",lambda event, index=album_index: self.show_album(index))
 
             """ Gerir grid """
             col_val +=1
@@ -135,7 +137,11 @@ class HomePage:
                 col_val = 0
                 row_val += 1
                 row_val += 2
-
+    
+    def show_album(self, index):
+        album_path = os.path.join("./Albuns", index)
+        album_page = AlbumPage(self.app, album_path)
+        self.app.show(album_page)
 
     def destroy(self):
         """ Destrói o quadro da Página Inicial para exibir conteúdo dinâmico na abertura de outra janela. """
@@ -551,11 +557,11 @@ class ExplorePage:
         self.frame.destroy()
 # ---------- AlbumPage ---------------
 class AlbumPage:
-    album_path = "./Albuns/1" #trocar para receber path do album clicado
-    images_dir = os.listdir(album_path)
     current_index = 0
     
-    def __init__(self,app):
+    def __init__(self,app, album_path):
+        self.album_path = album_path
+        self.images_dir = os.listdir(album_path)
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
@@ -602,7 +608,7 @@ class AlbumPage:
         if imagens:
             # path da imagem atual
             img_name = imagens[self.current_index]
-            img_path = os.path.join("./Albuns/1", img_name)
+            img_path = os.path.join(self.album_path, img_name)
 
             # Resize imagem
             img = Image.open(img_path)
