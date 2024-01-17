@@ -22,8 +22,9 @@ class App:
 
         self.menu = Menu(self)
         self.current = HomePage(self)
-        self.root.mainloop()
 
+        self.root.mainloop()
+    
 
     def create_sidebar(self):
         sidebar = tk.Frame(self.container, bg="gray", width=200)
@@ -92,6 +93,7 @@ class HomePage:
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.pack(fill=tk.BOTH, expand=True)
+        app.root.title("My Photos - HomePage")
 
         """ Image frame """
         # frame criado para que as imagens não interfiram com a side bar
@@ -194,6 +196,7 @@ class LoginPage:
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        app.root.title("My Photos - Login")
 
         label_email = tk.Label(self.frame, text="Email:")
         label_email.pack()
@@ -274,6 +277,7 @@ class CreateAccountPage:
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        app.root.title("My Photos - Create Account")
 
         # Labels and Entries
         tk.Label(self.frame, text="First Name:").grid(row=0, column=0, sticky="w")
@@ -330,6 +334,7 @@ class CreateAlbumPage:
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        app.root.title("My Photos - Create Album")
 
         #Entry
         tk.Label(self.frame, text="Nome:").pack(pady=5)
@@ -448,6 +453,7 @@ class ProfilePage:
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.pack(fill=tk.BOTH, expand=True)
+        app.root.title("My Photos - Profile")
 
         for album_info in user.albums:
             album_index, album_name = album_info
@@ -490,6 +496,7 @@ class ExplorePage:
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        app.root.title("My Photos - Explore")
 
         """ Search Bar """
         #frame para colocar a search bar e respetivo botão
@@ -560,6 +567,7 @@ class AlbumPage:
         self.album_path = album_path
         self.images_dir = os.listdir(album_path)
         self.app = app
+        app.root.title("My Photos - {}".format(album_path))
         self.frame = tk.Frame(app.container)
         self.frame.pack(side="top",anchor="center")
         # frame auxiliar para organização
@@ -581,7 +589,6 @@ class AlbumPage:
         self.remover.pack(side="bottom", anchor="center")
         
 
-        
         self.lista()
         self.ver_imagens()
 
@@ -620,7 +627,8 @@ class AlbumPage:
             # Label para as imagens
             label = tk.Label(self.images_frame, image=img_tk, bg="Grey")
             label.image = img_tk  
-            label.pack(side="left", padx=5)   
+            label.pack(side="left", padx=5)
+             
 
     def next_image(self):
         imagens = self.images_dir
@@ -637,9 +645,7 @@ class AlbumPage:
         else:
             messagebox.showinfo("Start of List", "Already at the first image.")
         self.ver_imagens() 
-
-
-
+    
     def destroy(self):
             """ Destrói o quadro da Página de Notification Page. """
 
@@ -650,6 +656,7 @@ class NotificationPage:
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        app.root.title("My Photos - Notifications")
 
     def destroy(self):
             """ Destrói o quadro da Página de Notification Page. """
