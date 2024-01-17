@@ -97,9 +97,6 @@ class HomePage:
         # frame criado para que as imagens não interfiram com a side bar
         self.image_frame = tk.Frame(self.frame, width=400, height=100)
         self.image_frame.pack(side="top", pady=5)
-        #testar pagina album
-        self.teste = tk.Button(self.frame, text="Testar", command=lambda: app.show(AlbumPage))
-        self.teste.pack(side="top")
         
         self.displayAlbuns()
 
