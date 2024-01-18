@@ -1,4 +1,5 @@
 import tkinter as tk
+import tkinter.ttk as ttk
 from tkinter import messagebox,filedialog
 from PIL import Image, ImageTk
 import os
@@ -33,14 +34,28 @@ class App:
         btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(ProfilePage))
         btn_profile.pack(fill="x", padx=5, pady=5)
 
-        btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(CreateAlbumPage))
+        btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_create_album)
         btn_profile.pack(fill="x", padx=5, pady=5)
 
         btn_explore = tk.Button(sidebar, text="Explore", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(ExplorePage))
         btn_explore.pack(fill="x", padx=5, pady=5)
 
-        btn_notifications = tk.Button(sidebar, text="Notifications", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(NotificationPage))
+        btn_notifications = tk.Button(sidebar, text="Notifications", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_notification_page)
         btn_notifications.pack(fill="x", padx=5, pady=5)
+
+    def show_create_album(self):
+        if user.mail == "user":
+            messagebox.showerror("Need Account", "Please log in or create an account to access")
+            self.show(HomePage)
+        else:
+            self.show(CreateAlbumPage)
+    def show_notification_page(self):
+        if user.mail == "user":
+            messagebox.showerror("Need Account", "Please log in or create an account to access")
+            self.show(HomePage)
+        else:
+            self.show(NotificationPage)
+    
 
     def geometry(self):
         """ Define a geometria da janela principal da aplicação com base no tamanho do ecrã. """
@@ -455,6 +470,11 @@ class ProfilePage:
         self.frame.pack(fill=tk.BOTH, expand=True)
         app.root.title("My Photos - Profile")
 
+        if user.mail == "adm":
+            btn_master = tk.Button(self.frame,text="Administation Menu", command=lambda: app.show(admPage))
+            btn_master.pack()
+
+
         for album_info in user.albums:
             album_index, album_name = album_info
             label = tk.Label(self.frame, text="Album {0}: {1}".format(album_index, album_name))
@@ -686,6 +706,67 @@ class NotificationPage:
             """ Destrói o quadro da Página de Notification Page. """
 
             self.frame.destroy()
+# ---------- Notification Page ---------------
+class NotificationPage:
+    def __init__(self,app):
+        self.app = app
+        self.frame = tk.Frame(app.container)
+        self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+    def destroy(self):
+            """ Destrói o quadro da Página de Notification Page. """
+
+            self.frame.destroy()
+class admPage:
+    def __init__(self,app):
+        self.app = app
+        self.frame = tk.Frame(app.container)
+        self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+
+        # Frame da esquerda (users_tree e btn_userRemove)
+        self.left_frame = tk.Frame(self.frame)
+        self.left_frame.pack(side="left", padx=10, pady=20)
+
+        self.users_tree = ttk.Treeview(self.left_frame, selectmode="browse", columns=("Index","First Name","Last Name","Email"), show="headings")
+        self.users_tree.column("Index",width=50,anchor="c")
+        self.users_tree.column("First Name",width=100,anchor="c")
+        self.users_tree.column("Last Name",width=100,anchor="c")
+        self.users_tree.column("Email",width=100,anchor="c")
+        self.users_tree.heading("Index",text="Index")
+        self.users_tree.heading("First Name",text="First Name")
+        self.users_tree.heading("Last Name",text="Last Name")
+        self.users_tree.heading("Email",text="Email")
+        self.users_tree.pack(pady=15)
+
+        self.btn_userRemove = tk.Button(self.left_frame, text=" Eliminate User",  height=5, width=20, command=None)
+        self.btn_userRemove.pack()
+
+        # Frame da direita (album_tree e btn_albumRemove)
+        self.right_frame = tk.Frame(self.frame)
+        self.right_frame.pack(side="right", padx=50)
+
+        self.album_tree = ttk.Treeview(self.right_frame, selectmode="browse", columns=("Index","Author","Title","Category","Number of Photos"), show="headings")
+        self.album_tree.column("Index",width=50,anchor="c")
+        self.album_tree.column("Author",width=100,anchor="c")
+        self.album_tree.column("Title",width=100,anchor="c")
+        self.album_tree.column("Category",width=100,anchor="c")
+        self.album_tree.column("Number of Photos",width=100,anchor="c")
+        self.album_tree.heading("Index",text="Index")
+        self.album_tree.heading("Author",text="Author")
+        self.album_tree.heading("Title",text="Title")
+        self.album_tree.heading("Category",text="Category")
+        self.album_tree.heading("Number of Photos",text="Number of Photos")
+        self.album_tree.pack(pady=15)
+
+        self.btn_albumRemove = tk.Button(self.right_frame, text=" Eliminate Album",  height=5, width=20, command=None)
+        self.btn_albumRemove.pack()
+
+    def destroy(self):
+        """ Destrói o quadro da Página de Administration Page. """
+
+        self.frame.destroy()
+
 
 
 global user
