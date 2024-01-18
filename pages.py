@@ -82,6 +82,12 @@ class App:
 
         self.current.destroy()
         self.current = page(self)
+        
+    def show_with_Arguments(self, page):
+        """ Destroi a página atual e mostra a página especificada. """
+
+        self.current.destroy()
+        self.current = page
 
 class Menu:
     def __init__(self, app):
@@ -154,8 +160,7 @@ class HomePage:
     
     def show_album(self, index):
         album_path = os.path.join("./Albuns", index)
-        album_page = AlbumPage(self.app, album_path)
-        self.app.show(album_page)
+        self.app.show_with_Arguments(AlbumPage(self.app,album_path))
 
     def destroy(self):
         """ Destrói o quadro da Página Inicial para exibir conteúdo dinâmico na abertura de outra janela. """
@@ -581,37 +586,34 @@ class ExplorePage:
         self.frame.destroy()
 # ---------- AlbumPage ---------------
 class AlbumPage:
-    current_index = 0
-    album_title = ""
-    
-    def get_album_name(self):
-        """Funçao que vai ao albuns.txt e devolve uma variavel com o nome do album"""
+    def __init__(self,app, album_path):
+        
+        """Obter nome do album"""
         file_path = "./files/albuns.txt"
         file = open(file_path, "r")
         data = file.readlines()
         file.close()
-
+        
+        self.current_index = int(os.path.basename(album_path))
+        album_title = ""
+        
         for linha in data:
             values = linha.split(";")
             index = int(values[0])
             if self.current_index == index:
-                self.album_title = values[1]
+                album_title = values[1].strip()
                 break
-            else:
-                continue
-
-        return self.album_title
-
-    def __init__(self,app, album_path):
-        self.album_path = album_path
+        
+        """Album page """
+        
         self.images_dir = os.listdir(album_path)
         self.app = app
-        # ARRANJAR AQUI
-        self.album_title = self.get_album_name()
-        app.root.title("My Photos - {}".format(self.album_title))
-        
+        self.album_path = album_path
         self.frame = tk.Frame(app.container)
         self.frame.pack(side="top",anchor="center")
+        app.root.title(f"My Photos - {str(album_title)}")
+        
+        
         # frame auxiliar para organização
         self.container = tk.Frame(self.frame, width=1080)
         self.container.pack(side="top", anchor="center")
