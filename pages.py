@@ -562,12 +562,34 @@ class ExplorePage:
 # ---------- AlbumPage ---------------
 class AlbumPage:
     current_index = 0
+    album_title = ""
     
+    def get_album_name(self):
+        """Funçao que vai ao albuns.txt e devolve uma variavel com o nome do album"""
+        file_path = "./files/albuns.txt"
+        file = open(file_path, "r")
+        data = file.readlines()
+        file.close()
+
+        for linha in data:
+            values = linha.split(";")
+            index = int(values[0])
+            if self.current_index == index:
+                self.album_title = values[1]
+                break
+            else:
+                continue
+
+        return self.album_title
+
     def __init__(self,app, album_path):
         self.album_path = album_path
         self.images_dir = os.listdir(album_path)
         self.app = app
-        app.root.title("My Photos - {}".format(album_path))
+        # ARRANJAR AQUI
+        self.album_title = self.get_album_name()
+        app.root.title("My Photos - {}".format(self.album_title))
+        
         self.frame = tk.Frame(app.container)
         self.frame.pack(side="top",anchor="center")
         # frame auxiliar para organização
@@ -590,7 +612,7 @@ class AlbumPage:
         
 
         self.lista()
-        self.ver_imagens()
+        self.ver_imagens()        
 
     #adcionar paths à listbox
     def lista(self):
@@ -644,7 +666,9 @@ class AlbumPage:
             self.current_index -= 1
         else:
             messagebox.showinfo("Start of List", "Already at the first image.")
-        self.ver_imagens() 
+        self.ver_imagens()
+    
+    
     
     def destroy(self):
             """ Destrói o quadro da Página de Notification Page. """
