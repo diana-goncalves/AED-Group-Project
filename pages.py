@@ -124,6 +124,7 @@ class HomePage:
         self.displayAlbuns()
 
     def displayAlbuns(self):
+        
         album_path = "./Albuns"
         albuns_list = os.listdir(album_path)
         
@@ -134,13 +135,15 @@ class HomePage:
         for album_index in albuns_list:
             current_album_path = os.path.join(album_path, album_index) # Percorre os albuns dentro da pasta Albuns
             images_dir = os.listdir(current_album_path)
-
             first_image = None
             for image in images_dir:
                 if image.endswith('.png'):                             # Encontra a primeira imagem dentro de cada Album
                     first_image = image
                     break
             if first_image:                                            # Coloca a imagem
+                
+                album_title = AlbumPage.get_album_title(current_album_path)
+
                 img_path = os.path.join(current_album_path, first_image)
                 img = Image.open(img_path)
                 img = img.resize((240,240))
@@ -150,6 +153,12 @@ class HomePage:
                 label.image = img_Tk
                 label.grid(row=row_val, column=col_val, padx=5, pady=5, sticky="nw")
                 label.bind("<Button-1>",lambda event, index=album_index: self.show_album(index))
+                album_header = tk.Frame(self.image_frame)
+                album_header.grid(row=row_val+1, column=col_val, padx=5, pady=5, sticky="nw")
+                title = tk.Label(album_header, text="{} x likes".format(album_title))
+                title.pack(side="left", anchor="w")
+                
+                
 
             """ Gerir grid """
             col_val +=1
@@ -586,6 +595,26 @@ class ExplorePage:
         self.frame.destroy()
 # ---------- AlbumPage ---------------
 class AlbumPage:
+    @staticmethod
+    def get_album_title(album_path):
+        """Obter nome do album"""
+        file_path = "./files/albuns.txt"
+        file = open(file_path, "r")
+        data = file.readlines()
+        file.close()
+
+        current_index = int(os.path.basename(album_path))
+        album_title = ""
+
+        for linha in data:
+            values = linha.split(";")
+            index = int(values[0])
+            if current_index == index:
+                album_title = values[1].strip()
+                break
+
+        return album_title
+    
     def __init__(self,app, album_path):
         
         """Obter nome do album"""
@@ -595,23 +624,15 @@ class AlbumPage:
         file.close()
         
         self.current_index = int(os.path.basename(album_path))
-        album_title = ""
-        
-        for linha in data:
-            values = linha.split(";")
-            index = int(values[0])
-            if self.current_index == index:
-                album_title = values[1].strip()
-                break
         
         """Album page """
-        
+        self.album_title = self.get_album_title(album_path)
         self.images_dir = os.listdir(album_path)
         self.app = app
         self.album_path = album_path
         self.frame = tk.Frame(app.container)
         self.frame.pack(side="top",anchor="center")
-        app.root.title(f"My Photos - {str(album_title)}")
+        app.root.title(f"My Photos - {str(self.album_title)}")
         
         
         # frame auxiliar para organização
