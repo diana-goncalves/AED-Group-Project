@@ -25,7 +25,7 @@ class App:
         self.current = HomePage(self)
 
         self.root.mainloop()
-    
+
 
     def create_sidebar(self):
         sidebar = tk.Frame(self.container, bg="gray", width=200)
@@ -55,7 +55,7 @@ class App:
             self.show(HomePage)
         else:
             self.show(NotificationPage)
-    
+
 
     def geometry(self):
         """ Define a geometria da janela principal da aplicação com base no tamanho do ecrã. """
@@ -82,7 +82,7 @@ class App:
 
         self.current.destroy()
         self.current = page(self)
-        
+
     def show_with_Arguments(self, page):
         """ Destroi a página atual e mostra a página especificada. """
 
@@ -120,53 +120,62 @@ class HomePage:
         # frame criado para que as imagens não interfiram com a side bar
         self.image_frame = tk.Frame(self.frame, width=400, height=100)
         self.image_frame.pack(side="top", pady=5)
-        
+
         self.displayAlbuns()
 
     def displayAlbuns(self):
-        
         album_path = "./Albuns"
         albuns_list = os.listdir(album_path)
-        
+
+        row_val = 0
+        col_val = 0
+
+    def displayAlbuns(self):
+        album_path = "./Albuns"
+        albuns_list = os.listdir(album_path)
 
         row_val = 0
         col_val = 0
 
         for album_index in albuns_list:
-            current_album_path = os.path.join(album_path, album_index) # Percorre os albuns dentro da pasta Albuns
-            images_dir = os.listdir(current_album_path)
-            first_image = None
-            for image in images_dir:
-                if image.endswith('.png'):                             # Encontra a primeira imagem dentro de cada Album
-                    first_image = image
-                    break
-            if first_image:                                            # Coloca a imagem
-                
-                album_title = AlbumPage.get_album_title(current_album_path)
+            current_album_path = os.path.join(album_path, album_index)
 
-                img_path = os.path.join(current_album_path, first_image)
-                img = Image.open(img_path)
-                img = img.resize((240,240))
-                img_Tk = ImageTk.PhotoImage(img)
+            # Verificar se é um diretório antes de tentar listar seus arquivos
+            if os.path.isdir(current_album_path):
+                # Filtrar apenas arquivos .png
+                images_dir = [file for file in os.listdir(current_album_path) if os.path.isfile(os.path.join(current_album_path, file)) and file.endswith('.png')]
 
-                label = tk.Label(self.image_frame, image=img_Tk,width=240, height=240 )
-                label.image = img_Tk
-                label.grid(row=row_val, column=col_val, padx=5, pady=5, sticky="nw")
-                label.bind("<Button-1>",lambda event, index=album_index: self.show_album(index))
-                album_header = tk.Frame(self.image_frame)
-                album_header.grid(row=row_val+1, column=col_val, padx=5, pady=5, sticky="nw")
-                title = tk.Label(album_header, text="{} x likes".format(album_title))
-                title.pack(side="left", anchor="w")
-                
-                
+                # Ignorar diretórios e .DS_Store
+                images_dir = [file for file in images_dir if file != '.DS_Store']
 
-            """ Gerir grid """
-            col_val +=1
-            if col_val >= 3:                                            # Mudar o 3 se quiserem mais colunas
-                col_val = 0
-                row_val += 1
-                row_val += 2
-    
+                first_image = images_dir[0] if images_dir else None
+
+                if first_image:
+                    album_title = AlbumPage.get_album_title(current_album_path)
+
+                    img_path = os.path.join(current_album_path, first_image)
+                    img = Image.open(img_path)
+                    img = img.resize((240, 240))
+                    img_Tk = ImageTk.PhotoImage(img)
+
+                    label = tk.Label(self.image_frame, image=img_Tk, width=240, height=240)
+                    label.image = img_Tk
+                    label.grid(row=row_val, column=col_val, padx=5, pady=5, sticky="nw")
+                    label.bind("<Button-1>", lambda event, index=album_index: self.show_album(index))
+
+                    album_header = tk.Frame(self.image_frame)
+                    album_header.grid(row=row_val + 1, column=col_val, padx=5, pady=5, sticky="nw")
+                    title = tk.Label(album_header, text="{} x likes".format(album_title))
+                    title.pack(side="left", anchor="w")
+
+                col_val += 1
+                if col_val >= 3:
+                    col_val = 0
+                    row_val += 1
+                    row_val += 2
+
+
+
     def show_album(self, index):
         album_path = os.path.join("./Albuns", index)
         self.app.show_with_Arguments(AlbumPage(self.app,album_path))
@@ -614,17 +623,17 @@ class AlbumPage:
                 break
 
         return album_title
-    
+
     def __init__(self,app, album_path):
-        
+
         """Obter nome do album"""
         file_path = "./files/albuns.txt"
         file = open(file_path, "r")
         data = file.readlines()
         file.close()
-        
+
         self.current_index = int(os.path.basename(album_path))
-        
+
         """Album page """
         self.album_title = self.get_album_title(album_path)
         self.images_dir = os.listdir(album_path)
@@ -633,29 +642,29 @@ class AlbumPage:
         self.frame = tk.Frame(app.container)
         self.frame.pack(side="top",anchor="center")
         app.root.title(f"My Photos - {str(self.album_title)}")
-        
-        
+
+
         # frame auxiliar para organização
         self.container = tk.Frame(self.frame, width=1080)
         self.container.pack(side="top", anchor="center")
         # frame das imagens
         self.images_frame = tk.Frame(self.container, bg="white", width=240, height = 350 )
         self.images_frame.pack(side="right", anchor="center", padx=100)
-        # botões de avançar e retroceder 
+        # botões de avançar e retroceder
         self.avancar = tk.Button(self.container,text=">", command=self.next_image, width=6)
         self.avancar.pack(side="right", padx=1, anchor="s")
         self.retroceder = tk.Button(self.container,text="<", command=self.prev_image, width=6)
         self.retroceder.pack(side="left", padx=1, anchor="s")
         #  lista com as paths da imagem
         self.list = tk.Listbox(self.container, bg="white", width=200, height= 15)
-        self.list.pack(side="top", padx=12)                                                      
-        # botao para remover imagem selecionada       
+        self.list.pack(side="top", padx=12)
+        # botao para remover imagem selecionada
         self.remover = tk.Button(self.container, width=10, height=2, text="remove image", command=self.remover_imagens)
         self.remover.pack(side="bottom", anchor="center")
-        
+
 
         self.lista()
-        self.ver_imagens()        
+        self.ver_imagens()
 
     #adcionar paths à listbox
     def lista(self):
@@ -688,12 +697,12 @@ class AlbumPage:
             # Apagar foto anterior
             for widget in self.images_frame.winfo_children():
                 widget.destroy()
-            
+
             # Label para as imagens
             label = tk.Label(self.images_frame, image=img_tk, bg="Grey")
-            label.image = img_tk  
+            label.image = img_tk
             label.pack(side="left", padx=5)
-             
+
 
     def next_image(self):
         imagens = self.images_dir
@@ -710,9 +719,9 @@ class AlbumPage:
         else:
             messagebox.showinfo("Start of List", "Already at the first image.")
         self.ver_imagens()
-    
-    
-    
+
+
+
     def destroy(self):
             """ Destrói o quadro da Página de Notification Page. """
 
