@@ -730,19 +730,10 @@ class NotificationPage:
             """ Destrói o quadro da Página de Notification Page. """
 
             self.frame.destroy()
-# ---------- Notification Page ---------------
-class NotificationPage:
-    def __init__(self,app):
-        self.app = app
-        self.frame = tk.Frame(app.container)
-        self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
-    def destroy(self):
-            """ Destrói o quadro da Página de Notification Page. """
-
-            self.frame.destroy()
 class admPage:
     def __init__(self,app):
+
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
@@ -763,7 +754,7 @@ class admPage:
         self.users_tree.heading("Email",text="Email")
         self.users_tree.pack(pady=15)
 
-        self.btn_userRemove = tk.Button(self.left_frame, text=" Eliminate User",  height=5, width=20, command=None)
+        self.btn_userRemove = tk.Button(self.left_frame, text=" Eliminate User",  height=5, width=20, command=self.eliminar_user)
         self.btn_userRemove.pack()
 
         # Frame da direita (album_tree e btn_albumRemove)
@@ -783,8 +774,80 @@ class admPage:
         self.album_tree.heading("Number of Photos",text="Number of Photos")
         self.album_tree.pack(pady=15)
 
-        self.btn_albumRemove = tk.Button(self.right_frame, text=" Eliminate Album",  height=5, width=20, command=None)
+        self.btn_albumRemove = tk.Button(self.right_frame, text=" Eliminate Album",  height=5, width=20, command=self.eliminar_albuns)
         self.btn_albumRemove.pack()
+
+        self.preencher_users()
+        self.preencher_albuns()
+        
+    def read_Info(self,path,aux):
+        """ Lê informações do utilizador do ficheiro users.txt."""
+        albuns = []
+        i=0
+        ficheiro = open(path, "r")
+        linhas = ficheiro.readlines()
+        for linha in linhas:
+            albuns.append([])
+            linha = linha.split(";")
+            linha[aux-1] = linha[aux-1].replace("\n", "")
+            for j in range(aux):
+                albuns[i].append(linha[j])
+            i+=1
+        ficheiro.close()
+        return albuns
+
+    def preencher_users(self):
+        lista= self.read_Info("./files/users.txt",5)#cria a lista com os dados do ficheiro
+        self.users_tree.delete(*self.users_tree.get_children()) #apaga o conteudo 
+        for i in range(1,len(lista)):#preenche com todo o conteudo do ficheiro        
+            self.users_tree.insert("","end", values= (lista[i][0],lista[i][1],lista[i][2],lista[i][3],lista[i][4]))
+
+    def preencher_albuns(self):
+        lista= self.read_Info("./files/albuns.txt",6)#cria a lista com os dados do ficheiro
+        self.album_tree.delete(*self.album_tree.get_children()) #apaga o conteudo 
+        for i in range(len(lista)):#preenche com todo o conteudo do ficheiro        
+            self.album_tree.insert("","end", values= (lista[i][0],lista[i][1],lista[i][2],lista[i][3],lista[i][4],lista[i][5]))
+
+    def eliminar_user(self):
+        if self.users_tree.focus() == "":
+            messagebox.showerror("error","Select item first")
+            return
+        else:
+            row_id = self.users_tree.focus()#obter o id que o adm selecionou
+            self.users_tree.delete(row_id)#apaga os dados na tree
+        self.salvar_treeview(self.users_tree,"./files/users.txt")
+        
+
+    def eliminar_albuns(self):
+        if self.album_tree.focus() == "":
+            messagebox.showerror("error","Select item first")
+            return
+        else:
+            row_id = self.album_tree.focus()#obter o id que o adm selecionou
+            album_deleted = self.album_tree.item(row_id,"values")#obtem os dados do album
+            
+            destino_dir = "./Albuns/%s" %str(album_deleted[0])#cria o path para as fotos do album
+            #for para percorrer as imagens e as eliminar
+            for imagem in os.listdir(destino_dir):
+                caminho_imagem = os.path.join(destino_dir,imagem)
+                os.remove(caminho_imagem)
+            os.rmdir(destino_dir)
+            #
+            self.album_tree.delete(row_id)#apaga os dados na tree
+        self.salvar_treeview(self.album_tree,"./files/albuns.txt")
+        
+    def salvar_treeview(self, treeview, nome_do_ficheiro):
+        with open(nome_do_ficheiro, 'w') as ficheiro:
+            # Obtemos as colunas da treeview
+            colunas = treeview["columns"]
+            if treeview == self.users_tree:
+                ficheiro.write("1;adm;12345;First;Last\n")
+            # Iteramos sobre os itens da treeview
+            for item in treeview.get_children():
+                # Obtemos os valores de cada coluna para o item atual
+                valores = [treeview.item(item, 'values')[coluna] for coluna in range(len(colunas))]##ver
+                # Escrevemos os valores no arquivo, separados por ponto e vírgula
+                ficheiro.write(';'.join(map(str, valores)) + '\n')
 
     def destroy(self):
         """ Destrói o quadro da Página de Administration Page. """
