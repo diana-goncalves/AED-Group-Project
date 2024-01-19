@@ -130,13 +130,6 @@ class HomePage:
         row_val = 0
         col_val = 0
 
-    def displayAlbuns(self):
-        album_path = "./Albuns"
-        albuns_list = os.listdir(album_path)
-
-        row_val = 0
-        col_val = 0
-
         for album_index in albuns_list:
             current_album_path = os.path.join(album_path, album_index)
 
@@ -173,7 +166,6 @@ class HomePage:
                     col_val = 0
                     row_val += 1
                     row_val += 2
-
 
 
     def show_album(self, index):
