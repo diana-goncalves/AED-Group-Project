@@ -430,7 +430,9 @@ class CreateAlbumPage:
         caminhos = filedialog.askopenfilenames(
             title="Select Image",
             initialdir="./images",
-            filetypes=(("png files", "*.png"), ("gif files", "*.gif"), ("all files", "*.*")),
+            #filetypes=(("png files", "*.png"), ("gif files", "*.gif"), ("all files", "*.*")),
+            filetypes = [("Image files", "*.png *.gif *.jpg *.jpeg *.bmp *.tif *.tiff")]
+
         )
 
         # Cria o diretório de destino baseado na função create_album_path()
