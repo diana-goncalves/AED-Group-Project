@@ -617,7 +617,7 @@ class ExplorePage:
         self.image_frame.update_idletasks()
         self.canvas.config(scrollregion=self.canvas.bbox("all"))
 
-        def destroy(self):
+    def destroy(self):
             """ Destrói o quadro da Página de Explore. """
             self.frame.destroy()
 
