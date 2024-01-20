@@ -700,11 +700,13 @@ class AlbumPage:
 
     def view_images(self):
         """ Mostrar as imagens """
+        current_index = self.current_index
         imagens = self.images_dir
 
         if imagens:
             # path da imagem atual
-            img_name = imagens[self.current_index]
+            current_index = min(current_index, len(imagens)-1)
+            img_name = imagens[current_index]
             img_path = os.path.join(self.album_path, img_name)
 
             # Resize imagem
