@@ -2,6 +2,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox,filedialog
 from PIL import Image, ImageTk
+from tkinter import Scrollbar
 import os
 import datetime as date
 
@@ -20,18 +21,16 @@ class App:
         self.create_sidebar()
         self.user_manager = UserManager()
 
-
         self.menu = Menu(self)
         self.current = HomePage(self)
 
         self.root.mainloop()
 
-
     def create_sidebar(self):
         sidebar = tk.Frame(self.container, bg="gray", width=200)
         sidebar.pack(fill="y", side="left")
 
-        btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(ProfilePage))
+        btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_profile_page)
         btn_profile.pack(fill="x", padx=5, pady=5)
 
         btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_create_album)
@@ -43,18 +42,21 @@ class App:
         btn_notifications = tk.Button(sidebar, text="Notifications", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_notification_page)
         btn_notifications.pack(fill="x", padx=5, pady=5)
 
+    def check_user_login(self, page):
+        if user.mail == "user":
+            messagebox.showerror("Need Account", "Please log in or create an account to access")
+            self.show(HomePage)
+        else:
+            self.show(page)
+
     def show_create_album(self):
-        if user.mail == "user":
-            messagebox.showerror("Need Account", "Please log in or create an account to access")
-            self.show(HomePage)
-        else:
-            self.show(CreateAlbumPage)
+        self.check_user_login(CreateAlbumPage)
+
     def show_notification_page(self):
-        if user.mail == "user":
-            messagebox.showerror("Need Account", "Please log in or create an account to access")
-            self.show(HomePage)
-        else:
-            self.show(NotificationPage)
+        self.check_user_login(NotificationPage)
+
+    def show_profile_page(self):
+        self.check_user_login(ProfilePage)
 
 
     def geometry(self):
@@ -116,12 +118,28 @@ class HomePage:
         self.frame.pack(fill=tk.BOTH, expand=True)
         app.root.title("My Photos - HomePage")
 
-        """ Image frame """
-        # frame criado para que as imagens não interfiram com a side bar
-        self.image_frame = tk.Frame(self.frame, width=400, height=100)
+        # Adiciona um Canvas para o scroll
+        canvas = tk.Canvas(self.frame)
+        canvas.pack(side="left", fill="both", expand=True)
+
+        # Adiciona uma barra de scroll vertical
+        scrollbar = tk.Scrollbar(self.frame, command=canvas.yview)
+        scrollbar.pack(side="right", fill="y")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Conteúdo da HomePage
+        self.image_frame = tk.Frame(canvas, width=400, height=100)
         self.image_frame.pack(side="top", pady=5)
 
         self.displayAlbuns()
+
+        # Configura o Canvas para dar scroll com o rato
+        canvas.bind("<Configure>", lambda event, canvas=canvas: self.on_canvas_configure(event, canvas))
+        canvas.create_window((0, 0), window=self.image_frame, anchor="nw")
+
+    def on_canvas_configure(self, event, canvas):
+        """ Ajusta a região de rolagem do Canvas quando o tamanho do conteúdo é alterado. """
+        canvas.configure(scrollregion=canvas.bbox("all"))
 
     def displayAlbuns(self):
         album_path = "./Albuns"
@@ -133,7 +151,7 @@ class HomePage:
         for album_index in albuns_list:
             current_album_path = os.path.join(album_path, album_index)
 
-            # Verificar se é um diretório antes de tentar listar seus arquivos
+            # Verificar se é um diretório antes de tentar list_imagesr seus arquivos
             if os.path.isdir(current_album_path):
                 # Filtrar apenas arquivos .png
                 images_dir = [file for file in os.listdir(current_album_path) if os.path.isfile(os.path.join(current_album_path, file)) and file.endswith('.png')]
@@ -164,7 +182,6 @@ class HomePage:
                 col_val += 1
                 if col_val >= 3:
                     col_val = 0
-                    row_val += 1
                     row_val += 2
 
 
@@ -177,7 +194,7 @@ class HomePage:
         self.frame.destroy()
 
 
-# ---------- User management ---------------    NOVO!!!
+# ---------- User management ---------------
 class UserManager:
     def __init__(self):
         self.users = []
@@ -214,11 +231,10 @@ class User_logged:
         self.senha = senha
         self.first_name = first_name
         self.last_name = last_name
-        self.albums = []  # lista para armazenar os álbuns do user para exibir no ProfilePage
+        self.albums = []  # list_images para armazenar os álbuns do user para exibir no ProfilePage
 
 
 # ---------- Login Page ---------------
-
 class LoginPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Início de Sessão. """
@@ -263,26 +279,21 @@ class LoginPage:
             ficheiro.write("1;adm;12345;First;Last\n")  # ID;username;senha
             ficheiro.close()
 
-    def read_InfoUser(self):
+    def read_InfoFileUsersUser(self):
         """ Lê informações do utilizador do ficheiro users.txt."""
 
         self.create_file()
-        #index;email;pass;firstname;surname
+
         users = []
-        ficheiro = open("./files/users.txt", "r")
-        linhas = ficheiro.readlines()
-        for linha in linhas:
-            users.append([])
-            linha = linha.split(";")
-            linha[4] = linha[4].replace("\n", "")
-            for j in range(5):
-                users[-1].append(linha[j])
-        ficheiro.close()
+        with open("./files/users.txt", "r") as ficheiro:
+            linhas = ficheiro.readlines()
+            for linha in linhas:
+                users.append(linha.strip().split(";"))
         return users
 
     def login(self):
         """ Realiza a ação de início de sessão e verifica as credenciais do utilizador. """
-        users = self.read_InfoUser()  # Lê os usuários
+        users = self.read_InfoFileUsersUser()  # Lê os usuários
 
         for i in range(len(users)):
             if str(self.user_email.get()) == str(users[i][1].strip()) and str(self.user_senha.get()) == str(users[i][2].strip()):
@@ -357,10 +368,6 @@ class CreateAccountPage:
 class CreateAlbumPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Criação de Conta. """
-        # if user.mail == "user":
-        #     messagebox.showerror("Need Account","Please log in or create an account to access")
-        #     app.show(HomePage)
-        # else:
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
@@ -399,18 +406,17 @@ class CreateAlbumPage:
         btn_gravar = tk.Button(self.frame, text="Choose Images and Create Album!", width=30,height=5, command=self.save_and_create_album)
         btn_gravar.pack(pady=10)
 
-    def create_album_path(self): # Cria a pasta para o album e retorna o index
-        """
-            Create path to a new album
-        """
+    def create_album_path(self):
+        """ Cria a pasta para o album e retorna o index """
         if not os.path.exists("./Albuns"): #Confirma se o path existe, cria se não existir
             os.mkdir("./Albuns")
         index = len(os.listdir("./Albuns"))+1 # Lê quantos albuns existem e cria novo index
         novo_album_dir=os.path.join("./Albuns",str(index)) #Cria um caminho para o novo album
         os.mkdir(novo_album_dir)
-        return index # Returna index
+        return index
 
-    def save_images(self,index): # Pede as imagens ao utilizador e guarda-as
+    def save_images(self,index):
+        """ Pede as imagens ao utilizador e guarda-as """
         caminhos = filedialog.askopenfilenames(
             title="Select Image",
             initialdir="./images",
@@ -427,7 +433,6 @@ class CreateAlbumPage:
             return "cancel"
         else:
             i = 0
-            # Itera sobre os caminhos dos arquivos selecionados
             for caminho in caminhos:
                 # Define um novo caminho para a imagem com base no diretório de destino e no índice
                 novo_caminho = os.path.join(destino_dir, "{}.png".format(i))
@@ -438,9 +443,8 @@ class CreateAlbumPage:
                 imagem_pil.save(novo_caminho)
         return
 
-    def save_file_album(self,nome,desc,Categorias,data,user_index,index): # Guarda os dados do album
-        """ Cria um diretório para os arquivos do álbum se não existir """
-
+    def save_file_album(self,nome,desc,Categorias,data,user_index,index):
+        """ Guarda os dados do album """
         if not os.path.isfile("./files/albuns.txt"): # Confirma se o path existe, cria se nao
             ficheiro = open("./files/albuns.txt","w")
         else:
@@ -457,14 +461,13 @@ class CreateAlbumPage:
                 messagebox.showerror("Error Categories", "Need to select the category,\n try again")
                 return
 
-            index = self.create_album_path()  # Chama save_images diretamente para obter o índice
+            index = self.create_album_path()
             aux_img = self.save_images(index)  # retorma uma var que ajuda a saber se ocorreu problema no processo
             if aux_img == "cancel":  # se sim, pára o processo
                 return
             data = date.datetime.now()
             user_index = str(user.autor_index)
-            self.save_file_album(self.entry_nome.get(), self.desc_txt.get("1.0", "end-1c"), self.selected.get(),
-                                  data.strftime("%d/%m/%Y"), user_index, index)
+            self.save_file_album(self.entry_nome.get(), self.desc_txt.get("1.0", "end-1c"), self.selected.get(),data.strftime("%d/%m/%Y"), user_index, index)
             user.albums.append((index, self.entry_nome.get()))
             messagebox.showinfo("Album Created!", "Album created successfully")
             self.app.show(ProfilePage)
@@ -475,11 +478,11 @@ class CreateAlbumPage:
         """ Destrói o quadro da Página de Criação de Album. """
 
         self.frame.destroy()
+
 # ---------- Profile Page ---------------
 class ProfilePage:
     def __init__(self, app):
         """ Inicia o layout do Profile. """
-
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.pack(fill=tk.BOTH, expand=True)
@@ -489,35 +492,42 @@ class ProfilePage:
             btn_master = tk.Button(self.frame,text="Administation Menu", command=lambda: app.show(admPage))
             btn_master.pack()
 
-
         for album_info in user.albums:
             album_index, album_name = album_info
             label = tk.Label(self.frame, text="Album {0}: {1}".format(album_index, album_name))
             label.pack()
 
-            # Exibe imagens para cada álbum
-            self.display_images_for_album(album_index)
+            # Cria um novo frame para as imagens
+            image_frame = tk.Frame(self.frame)
+            image_frame.pack()
 
-    def display_images_for_album(self, album_index):
+            # Mostra imagens para cada álbum em uma grelha de 3 colunas
+            self.display_images_for_album(album_index, image_frame)
+
+    def display_images_for_album(self, album_index, image_frame):
         album_path = f"./Albuns/{album_index}"
         images_dir = os.listdir(album_path)
 
-        # Coloca as imagens do álbum numa lista
-        image_files = []
-        for image in images_dir:
-            if image.endswith('.png'):
-                image_files.append(image)
+        # Coloca as imagens do álbum numa list_images
+        image_files = [image for image in images_dir if image.endswith('.png')]
 
-        # Exibe as imagens
+        row_val = 0
+        col_val = 0
+
         for image_file in image_files:
             img_path = os.path.join(album_path, image_file)
             img = Image.open(img_path)
             img = img.resize((240, 240))
             img_tk = ImageTk.PhotoImage(img)
 
-            label = tk.Label(self.frame, image=img_tk, width=240, height=240)
+            label = tk.Label(image_frame, image=img_tk, width=240, height=240)
             label.image = img_tk
-            label.pack(padx=5, pady=5, anchor="nw")
+            label.grid(row=row_val, column=col_val, padx=5, pady=5, sticky="nw")
+
+            col_val += 1
+            if col_val >= 3:
+                col_val = 0
+                row_val += 1
 
 
     def destroy(self):
@@ -527,49 +537,50 @@ class ProfilePage:
 
 # ---------- Explore Page ---------------
 class ExplorePage:
-    def __init__(self,app):
+    def __init__(self, app):
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         app.root.title("My Photos - Explore")
 
         """ Search Bar """
-        #frame para colocar a search bar e respetivo botão
         self.search_frame = tk.Frame(self.frame)
-        self.search_frame.pack(side="top", pady=(0,5))
-        #variavel que guarda o texto da search bar
+        self.search_frame.pack(side="top", pady=(5, 5))
         self.search_text = tk.StringVar()
 
         self.search_bar = tk.Entry(self.search_frame, width=100, textvariable=self.search_text)
-        self.search_bar.pack(side= "left")
+        self.search_bar.pack(side="top", pady=(5, 0))  # Adicionei pady para ajustar a posição vertical da Entry
 
         self.search_button = tk.Button(self.search_frame, text="Search:", command=self.do_search)
-        self.search_button.pack(side="left")
+        self.search_button.pack(side="top", pady=(5, 0))  # Adicionei pady para ajustar a posição vertical do botão
 
-        """ Image frame """
-        # frame criado para que as imagens não interfiram com a side bar
-        self.image_frame = tk.Frame(self.frame, width=400, height=100)
-        self.image_frame.pack(side="top", pady=5)
+        # Adicionando barra de rolagem vertical à página
+        self.scrollbar = tk.Scrollbar(self.frame, orient="vertical")
+        self.scrollbar.pack(side="right", fill="y")
+
+        # Canvas para as imagens
+        self.canvas = tk.Canvas(self.frame, yscrollcommand=self.scrollbar.set, width=400, height=300)
+        self.canvas.pack(side="top", pady=5, expand=True, fill=tk.BOTH)
+
+        # Frame interno para conter as imagens
+        self.image_frame = tk.Frame(self.canvas)
+        self.canvas.create_window((0, 0), window=self.image_frame, anchor=tk.NW)
+
+        # Configurar a barra de rolagem
+        self.scrollbar.config(command=self.canvas.yview)
 
     def do_search(self):
-        # Recebe pesquisa
         search_query = self.search_text.get()
-        # Mostrar album baseado na pesquisa
         self.displayAlbum(search_query)
 
     def displayAlbum(self, album_index):
-        # Limpa imagens existentes na image_frame
         for widget in self.image_frame.winfo_children():
             widget.destroy()
 
         album_path = f"./Albuns/{album_index}"
         images_dir = os.listdir(album_path)
 
-        # Coloca as imagens do album numa lista
-        image_files = []
-        for image in images_dir:
-            if image.endswith('.png'):
-                image_files.append(image)
+        image_files = [image for image in images_dir if image.endswith('.png')]
 
         row_val = 0
         col_val = 0
@@ -584,21 +595,24 @@ class ExplorePage:
             label.image = img_tk
             label.grid(row=row_val, column=col_val, padx=5, pady=5, sticky="nw")
 
-            """ Gerir grid """
             col_val += 1
-            if col_val >= 3:  #numero de colunas
+            if col_val >= 3:
                 col_val = 0
                 row_val += 1
 
-    def destroy(self):
-        """ Destrói o quadro da Página de Explore. """
+        # Atualizar o tamanho do frame interno ao tamanho das imagens
+        self.image_frame.update_idletasks()
+        self.canvas.config(scrollregion=self.canvas.bbox("all"))
 
-        self.frame.destroy()
+        def destroy(self):
+            """ Destrói o quadro da Página de Explore. """
+            self.frame.destroy()
+
 # ---------- AlbumPage ---------------
 class AlbumPage:
     @staticmethod
     def get_album_title(album_path):
-        """Obter nome do album"""
+        """ Obtem o nome do album """
         file_path = "./files/albuns.txt"
         file = open(file_path, "r")
         data = file.readlines()
@@ -618,11 +632,10 @@ class AlbumPage:
 
     def __init__(self,app, album_path):
 
-        """Obter nome do album"""
+        """ Obter dados do ficheiro para evitar repetição """
         file_path = "./files/albuns.txt"
-        file = open(file_path, "r")
-        data = file.readlines()
-        file.close()
+        with open(file_path, "r") as file:
+            data = file.readlines()
 
         self.current_index = int(os.path.basename(album_path))
 
@@ -635,7 +648,6 @@ class AlbumPage:
         self.frame.pack(side="top",anchor="center")
         app.root.title(f"My Photos - {str(self.album_title)}")
 
-
         # frame auxiliar para organização
         self.container = tk.Frame(self.frame, width=1080)
         self.container.pack(side="top", anchor="center")
@@ -647,23 +659,24 @@ class AlbumPage:
         self.avancar.pack(side="right", padx=1, anchor="s")
         self.retroceder = tk.Button(self.container,text="<", command=self.prev_image, width=6)
         self.retroceder.pack(side="left", padx=1, anchor="s")
-        #  lista com as paths da imagem
+        #  list_images com as paths da imagem
         self.list = tk.Listbox(self.container, bg="white", width=200, height= 15)
         self.list.pack(side="top", padx=12)
         # botao para remover imagem selecionada
-        self.remover = tk.Button(self.container, width=10, height=2, text="remove image", command=self.remover_imagens)
+        self.remover = tk.Button(self.container, width=10, height=2, text="remove image", command=self.remoview_images)
         self.remover.pack(side="bottom", anchor="center")
 
 
-        self.lista()
-        self.ver_imagens()
+        self.list_images()
+        self.view_images()
 
-    #adcionar paths à listbox
-    def lista(self):
+    def list_images(self):
+        """ Adcionar paths à listbox. """
         for path in self.images_dir:
             self.list.insert("end",path)
-    #remover imagem selecionada na listbox
-    def remover_imagens(self):
+
+    def remoview_images(self):
+        """ Remove a imagem selecionada na listbox """
         imagens_selecionadas = self.list.curselection()
 
         if imagens_selecionadas:
@@ -671,8 +684,9 @@ class AlbumPage:
                 self.list.delete(image)
         else:
             messagebox.showwarning("ERROR", "Please select an item to remove.")
-    #mostrar imagens
-    def ver_imagens(self):
+
+    def view_images(self):
+        """ Mostrar as imagens """
         imagens = self.images_dir
 
         if imagens:
@@ -703,21 +717,20 @@ class AlbumPage:
             self.current_index += 1
         else:
             messagebox.showinfo("End of List", "No more images to display.")
-        self.ver_imagens()
+        self.view_images()
 
     def prev_image(self):
         if self.current_index > 0:
             self.current_index -= 1
         else:
             messagebox.showinfo("Start of List", "Already at the first image.")
-        self.ver_imagens()
-
-
+        self.view_images()
 
     def destroy(self):
             """ Destrói o quadro da Página de Notification Page. """
 
             self.frame.destroy()
+
 # ---------- Notification Page ---------------
 class NotificationPage:
     def __init__(self,app):
@@ -727,13 +740,11 @@ class NotificationPage:
         app.root.title("My Photos - Notifications")
 
     def destroy(self):
-            """ Destrói o quadro da Página de Notification Page. """
-
-            self.frame.destroy()
+        """ Destrói o quadro da Página de Notification Page. """
+        self.frame.destroy()
 
 class admPage:
     def __init__(self,app):
-
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
@@ -754,7 +765,7 @@ class admPage:
         self.users_tree.heading("Email",text="Email")
         self.users_tree.pack(pady=15)
 
-        self.btn_userRemove = tk.Button(self.left_frame, text=" Eliminate User",  height=5, width=20, command=self.eliminar_user)
+        self.btn_userRemove = tk.Button(self.left_frame, text="Remove User",  height=5, width=20, command=self.remove_users)
         self.btn_userRemove.pack()
 
         # Frame da direita (album_tree e btn_albumRemove)
@@ -774,13 +785,13 @@ class admPage:
         self.album_tree.heading("Number of Photos",text="Number of Photos")
         self.album_tree.pack(pady=15)
 
-        self.btn_albumRemove = tk.Button(self.right_frame, text=" Eliminate Album",  height=5, width=20, command=self.eliminar_albuns)
+        self.btn_albumRemove = tk.Button(self.right_frame, text="Remove Album",  height=5, width=20, command=self.remove_albums)
         self.btn_albumRemove.pack()
 
-        self.preencher_users()
-        self.preencher_albuns()
-        
-    def read_Info(self,path,aux):
+        self.fill_users()
+        self.fill_albuns()
+
+    def read_InfoFileUsers(self,path,aux):
         """ Lê informações do utilizador do ficheiro users.txt."""
         albuns = []
         i=0
@@ -796,47 +807,46 @@ class admPage:
         ficheiro.close()
         return albuns
 
-    def preencher_users(self):
-        lista= self.read_Info("./files/users.txt",5)#cria a lista com os dados do ficheiro
-        self.users_tree.delete(*self.users_tree.get_children()) #apaga o conteudo 
-        for i in range(1,len(lista)):#preenche com todo o conteudo do ficheiro        
-            self.users_tree.insert("","end", values= (lista[i][0],lista[i][1],lista[i][2],lista[i][3],lista[i][4]))
+    def fill_users(self):
+        list_images= self.read_InfoFileUsers("./files/users.txt",5) # Cria a list_images com os dados do ficheiro
+        self.users_tree.delete(*self.users_tree.get_children()) # Apaga o conteudo
+        for i in range(1,len(list_images)): # Preenche com todo o conteudo do ficheiro
+            self.users_tree.insert("","end", values= (list_images[i][0],list_images[i][1],list_images[i][2],list_images[i][3],list_images[i][4]))
 
-    def preencher_albuns(self):
-        lista= self.read_Info("./files/albuns.txt",6)#cria a lista com os dados do ficheiro
-        self.album_tree.delete(*self.album_tree.get_children()) #apaga o conteudo 
-        for i in range(len(lista)):#preenche com todo o conteudo do ficheiro        
-            self.album_tree.insert("","end", values= (lista[i][0],lista[i][1],lista[i][2],lista[i][3],lista[i][4],lista[i][5]))
+    def fill_albuns(self):
+        list_images= self.read_InfoFileUsers("./files/albuns.txt",6)
+        self.album_tree.delete(*self.album_tree.get_children())
+        for i in range(len(list_images)):
+            self.album_tree.insert("","end", values= (list_images[i][0],list_images[i][1],list_images[i][2],list_images[i][3],list_images[i][4],list_images[i][5]))
 
-    def eliminar_user(self):
+    def remove_users(self):
         if self.users_tree.focus() == "":
-            messagebox.showerror("error","Select item first")
+            messagebox.showerror("Error","Select item first")
             return
         else:
-            row_id = self.users_tree.focus()#obter o id que o adm selecionou
-            self.users_tree.delete(row_id)#apaga os dados na tree
-        self.salvar_treeview(self.users_tree,"./files/users.txt")
-        
+            row_id = self.users_tree.focus() # Obtem o id que o adm selecionou
+            self.users_tree.delete(row_id) # Apaga os dados na tree
+        self.save_treeview(self.users_tree,"./files/users.txt")
 
-    def eliminar_albuns(self):
+
+    def remove_albums(self):
         if self.album_tree.focus() == "":
-            messagebox.showerror("error","Select item first")
+            messagebox.showerror("Error","Select item first")
             return
         else:
-            row_id = self.album_tree.focus()#obter o id que o adm selecionou
-            album_deleted = self.album_tree.item(row_id,"values")#obtem os dados do album
-            
-            destino_dir = "./Albuns/%s" %str(album_deleted[0])#cria o path para as fotos do album
-            #for para percorrer as imagens e as eliminar
-            for imagem in os.listdir(destino_dir):
+            row_id = self.album_tree.focus()
+            album_deleted = self.album_tree.item(row_id,"values") # Obtem os dados do album
+
+            destino_dir = "./Albuns/%s" %str(album_deleted[0]) # Cria o path para as fotos do album
+
+            for imagem in os.listdir(destino_dir): # Percorre as imagens e elimina-as
                 caminho_imagem = os.path.join(destino_dir,imagem)
                 os.remove(caminho_imagem)
             os.rmdir(destino_dir)
-            #
-            self.album_tree.delete(row_id)#apaga os dados na tree
-        self.salvar_treeview(self.album_tree,"./files/albuns.txt")
-        
-    def salvar_treeview(self, treeview, nome_do_ficheiro):
+            self.album_tree.delete(row_id)
+        self.save_treeview(self.album_tree,"./files/albuns.txt")
+
+    def save_treeview(self, treeview, nome_do_ficheiro):
         with open(nome_do_ficheiro, 'w') as ficheiro:
             # Obtemos as colunas da treeview
             colunas = treeview["columns"]
@@ -853,8 +863,6 @@ class admPage:
         """ Destrói o quadro da Página de Administration Page. """
 
         self.frame.destroy()
-
-
 
 global user
 user = User_logged("0", "user", "", "", "")
