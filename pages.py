@@ -2,7 +2,6 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox,filedialog
 from PIL import Image, ImageTk
-from tkinter import Scrollbar
 import os
 import datetime as date
 
@@ -30,7 +29,7 @@ class App:
         sidebar = tk.Frame(self.container, bg="gray", width=200)
         sidebar.pack(fill="y", side="left")
 
-        btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_profile_page)
+        btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_notification_page)
         btn_profile.pack(fill="x", padx=5, pady=5)
 
         btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_create_album)
@@ -42,22 +41,26 @@ class App:
         btn_notifications = tk.Button(sidebar, text="Notifications", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_notification_page)
         btn_notifications.pack(fill="x", padx=5, pady=5)
 
-    def check_user_login(self, page):
+    def show_create_album(self):
         if user.mail == "user":
             messagebox.showerror("Need Account", "Please log in or create an account to access")
             self.show(HomePage)
         else:
-            self.show(page)
-
-    def show_create_album(self):
-        self.check_user_login(CreateAlbumPage)
+            self.show(CreateAlbumPage)
 
     def show_notification_page(self):
-        self.check_user_login(NotificationPage)
+        if user.mail == "user":
+            messagebox.showerror("Need Account", "Please log in or create an account to access")
+            self.show(HomePage)
+        else:
+            self.show(NotificationPage)
 
-    def show_profile_page(self):
-        self.check_user_login(ProfilePage)
-
+    def show_notification_page(self):
+        if user.mail == "user":
+            messagebox.showerror("Need Account", "Please log in or create an account to access")
+            self.show(HomePage)
+        else:
+            self.show(NotificationPage)
 
     def geometry(self):
         """ Define a geometria da janela principal da aplicação com base no tamanho do ecrã. """
@@ -151,7 +154,7 @@ class HomePage:
         for album_index in albuns_list:
             current_album_path = os.path.join(album_path, album_index)
 
-            # Verificar se é um diretório antes de tentar list_imagesr seus arquivos
+            # Verifica se é um diretório antes da função list_images
             if os.path.isdir(current_album_path):
                 # Filtrar apenas arquivos .png
                 images_dir = [file for file in os.listdir(current_album_path) if os.path.isfile(os.path.join(current_album_path, file)) and file.endswith('.png')]
@@ -407,12 +410,19 @@ class CreateAlbumPage:
         btn_gravar.pack(pady=10)
 
     def create_album_path(self):
-        """ Cria a pasta para o album e retorna o index """
-        if not os.path.exists("./Albuns"): #Confirma se o path existe, cria se não existir
-            os.mkdir("./Albuns")
-        index = len(os.listdir("./Albuns"))+1 # Lê quantos albuns existem e cria novo index
-        novo_album_dir=os.path.join("./Albuns",str(index)) #Cria um caminho para o novo album
-        os.mkdir(novo_album_dir)
+        """ Cria a pasta para o álbum e retorna o índice """
+        # Obtém a lista de subdiretórios numerados
+        subdiretorios_numerados = [
+            int(d) for d in os.listdir("./Albuns")
+            if os.path.isdir(os.path.join("./Albuns", d)) and d.isdigit()
+        ]
+
+        # Escolhe o próximo número disponível
+        index = 1 if not subdiretorios_numerados else max(subdiretorios_numerados) + 1
+
+        novo_album_dir = os.path.join("./Albuns", str(index))
+        os.makedirs(novo_album_dir)
+
         return index
 
     def save_images(self,index):
@@ -467,7 +477,8 @@ class CreateAlbumPage:
                 return
             data = date.datetime.now()
             user_index = str(user.autor_index)
-            self.save_file_album(self.entry_nome.get(), self.desc_txt.get("1.0", "end-1c"), self.selected.get(),data.strftime("%d/%m/%Y"), user_index, index)
+            self.save_file_album(self.entry_nome.get(), self.desc_txt.get("1.0", "end-1c"), self.selected.get(),
+                                  data.strftime("%d/%m/%Y"), user_index, index)
             user.albums.append((index, self.entry_nome.get()))
             messagebox.showinfo("Album Created!", "Album created successfully")
             self.app.show(ProfilePage)
@@ -489,7 +500,7 @@ class ProfilePage:
         app.root.title("My Photos - Profile")
 
         if user.mail == "adm":
-            btn_master = tk.Button(self.frame,text="Administation Menu", command=lambda: app.show(admPage))
+            btn_master = tk.Button(self.frame,text="Administation Menu", command=lambda: app.show(adminPage))
             btn_master.pack()
 
         for album_info in user.albums:
@@ -743,7 +754,7 @@ class NotificationPage:
         """ Destrói o quadro da Página de Notification Page. """
         self.frame.destroy()
 
-class admPage:
+class adminPage:
     def __init__(self,app):
         self.app = app
         self.frame = tk.Frame(app.container)
