@@ -99,16 +99,30 @@ class Menu:
         """ Inicia o menu e as suas opções.
         Args:
         - app: A instância principal da aplicação. """
-
+        
         menu = tk.Menu(app.root)
         options = tk.Menu(menu)
         options.add_command(label="Home", command=lambda: app.show(HomePage))
-        options.add_command(label="Login", command=lambda: app.show(LoginPage))
-        options.add_command(label="Create Account", command=lambda: app.show(CreateAccountPage))
-
+        if user.mail == "user":
+            options.add_command(label="Login", command=lambda: app.show(LoginPage))
+            options.add_command(label="Create Account", command=lambda: app.show(CreateAccountPage))
+        else:
+            options.add_command(label="Logout", command=lambda: self.logout(app))
         menu.add_cascade(label="Options", menu=options)
         app.root.config(menu=menu)
 
+    def logout(self,app):
+        option = messagebox.askquestion("Confirm Logout","Are you sure?")
+        if option == "yes":
+            user.autor_index = "0"
+            user.mail = "user"
+            user.senha = ""
+            user.first_name = ""
+            user.last_name = ""
+            app.show(HomePage)
+
+    
+        
 # ---------- Home Page ---------------
 class HomePage:
     def __init__(self, app):
@@ -120,6 +134,7 @@ class HomePage:
         self.frame = tk.Frame(app.container)
         self.frame.pack(fill=tk.BOTH, expand=True)
         app.root.title("My Photos - HomePage")
+        Menu(self.app)
 
         # Adiciona um Canvas para o scroll
         canvas = tk.Canvas(self.frame)
@@ -493,7 +508,7 @@ class CreateAlbumPage:
         self.frame.destroy()
 
 # ---------- Profile Page ---------------
-class ProfilePage:
+class ProfilePage:  
     def __init__(self, app):
         """ Inicia o layout do Profile. """
         self.app = app
