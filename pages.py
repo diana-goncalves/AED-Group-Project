@@ -29,7 +29,7 @@ class App:
         sidebar = tk.Frame(self.container, bg="gray", width=200)
         sidebar.pack(fill="y", side="left")
 
-        btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_notification_page)
+        btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_profile_page)
         btn_profile.pack(fill="x", padx=5, pady=5)
 
         btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_create_album)
@@ -51,19 +51,20 @@ class App:
         else:
             self.show(CreateAlbumPage)
 
-    def show_notification_page(self):
+    def show_profile_page(self):
         if user.mail == "user":
             messagebox.showerror("Need Account", "Please log in or create an account to access")
             self.show(HomePage)
         else:
-            self.show(NotificationPage)
+            self.show(ProfilePage)
 
     def show_notification_page(self):
-        if user.mail == "user":
-            messagebox.showerror("Need Account", "Please log in or create an account to access")
-            self.show(HomePage)
-        else:
-            self.show(NotificationPage)
+        # if user.mail == "user":
+        #     messagebox.showerror("Need Account", "Please log in or create an account to access")
+        #     self.show(HomePage)
+        # else:
+        #     self.show(NotificationPage)
+        self.show(NotificationPage)
 
     def geometry(self):
         """ Define a geometria da janela principal da aplicação com base no tamanho do ecrã. """
@@ -788,6 +789,56 @@ class NotificationPage:
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         app.root.title("My Photos - Notifications")
+
+        # Label com o username
+        user_header = tk.Label(self.frame, text="USERNAME NOTIFICATIONS")
+        user_header.pack(side="top", anchor="w")
+        # Canvas
+        canvas = tk.Canvas(self.frame, bg="white", width= 900, height=600)
+        canvas.pack(side="left", fill=tk.BOTH, expand=True, padx=40, pady=20)
+
+        # Adicionar scroll ao canvas
+        scrollbar = tk.Scrollbar(self.frame, command=canvas.yview)
+        scrollbar.pack(side="right", fill="y")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Frame que vai ter as notificações
+        notifications_frame = tk.Frame(canvas, bg="white")
+        canvas.create_window((0,0), window=notifications_frame, anchor="nw")
+
+        # teste
+        data = "22/01/2024"
+        noti = ["not 1 - first notification","not 2 - second notification","not 3 - third notification"]
+
+        for message in noti:
+            # frame para 1 notificação
+            notification_frame = tk.Frame(notifications_frame, bg="white", width= 850)
+            notification_frame.pack(fill=tk.X, expand=True, padx=40, pady=20)
+            # frame para datas
+            datas_frame = tk.Frame(notification_frame, bg="blue")
+            datas_frame.pack(side="left", fill="y")
+            # frame para texto
+            txt_frame = tk.Frame(notification_frame, bg="red")
+            txt_frame.pack(side="left", fill="y", padx=10)
+            # frame para botões
+            remove_frame = tk.Frame(notification_frame, bg="green")
+            remove_frame.pack(side="right", fill="y")
+            
+
+            # label com data
+            data_noti = tk.Label(datas_frame, text=data, bg="white", width=100)
+            data_noti.pack(side="left", anchor="w")
+            # label com texto da notificação
+            txt_noti = tk.Label(txt_frame, text=message, bg="white", width=600)
+            txt_noti.pack(fill="x", expand=True, anchor="w")
+            # botão remover notificação
+            remove_noti = tk.Button(remove_frame, text="remove", bg="white", width=100)
+            remove_noti.pack(side="right", anchor="e")
+
+        canvas.update_idletasks()
+        canvas.config(scrollregion=canvas.bbox("all"))
+
+
 
         
 
