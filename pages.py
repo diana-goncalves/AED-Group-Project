@@ -703,6 +703,13 @@ class AlbumPage:
         for path in self.images_dir:
             self.list.insert("end",path)
 
+        if self.images_dir:
+            self.list.selection_set(0)
+        else:
+            messagebox.showwarning("ERROR", "no images found.")
+            self.frame.destroy()      
+            
+
     def remoview_images(self):
         """ Remove a imagem selecionada na listbox """
         imagens_selecionadas = self.list.curselection()
@@ -715,12 +722,12 @@ class AlbumPage:
 
     def view_images(self):
         """ Mostrar as imagens """
-        current_index = self.current_index
+
         imagens = self.images_dir
 
         if imagens:
             # path da imagem atual
-            current_index = min(current_index, len(imagens)-1)
+            current_index = 0
             img_name = imagens[current_index]
             img_path = os.path.join(self.album_path, img_name)
 
@@ -739,22 +746,29 @@ class AlbumPage:
             label.image = img_tk
             label.pack(side="left", padx=5)
 
-
+    def selection_update(self, index):
+        self.list.selection_clear(0, "end")
+        self.current_index = index
+        self.list.selection_set(self.current_index)
+    
     def next_image(self):
+        #imagem anterior
         imagens = self.images_dir
-
-        if self.current_index < len(imagens) - 1:
-            self.current_index += 1
-        else:
-            messagebox.showinfo("End of List", "No more images to display.")
+        total   = len(imagens)
+        
+        self.current_index = (self.current_index + 1 ) % total
+        self.selection_update(self.current_index)
         self.view_images()
 
     def prev_image(self):
-        if self.current_index > 0:
-            self.current_index -= 1
-        else:
-            messagebox.showinfo("Start of List", "Already at the first image.")
+        #proxima imagem
+        imagens = self.images_dir
+        total   = len(imagens)
+        
+        self.current_index = (self.current_index - 1 ) % total
+        self.selection_update(self.current_index)
         self.view_images()
+
 
     def destroy(self):
             """ Destrói o quadro da Página de Notification Page. """
