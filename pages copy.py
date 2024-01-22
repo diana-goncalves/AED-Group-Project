@@ -59,12 +59,12 @@ class App:
             self.show(ProfilePage)
 
     def show_notification_page(self):
-        if user.mail == "user":
-            messagebox.showerror("Need Account", "Please log in or create an account to access")
-            self.show(HomePage)
-        else:
-            self.show(NotificationPage)
-      
+        # if user.mail == "user":
+        #     messagebox.showerror("Need Account", "Please log in or create an account to access")
+        #     self.show(HomePage)
+        # else:
+        #     self.show(NotificationPage)
+        self.show(NotificationPage)
 
     def geometry(self):
         """ Define a geometria da janela principal da aplicação com base no tamanho do ecrã. """
@@ -695,8 +695,8 @@ class AlbumPage:
             self.data = file.readlines()
         self.album_index = int(os.path.basename(album_path))
         self.image_index = 0
-        self.DataAlbum = AlbumPage.read_AlbumData(str(self.album_index))
-           
+        self.DataAlbum = self.read_AlbumData()
+        self.update_counter(self.DataAlbum[6])
 
         """Album page """
         self.album_title = self.get_album_title(album_path)
@@ -706,7 +706,6 @@ class AlbumPage:
         self.frame = tk.Frame(app.container)
         self.frame.pack(side="top",anchor="center")
         app.root.title(f"My Photos - {str(self.album_title)}")
-
 
         # frame auxiliar para organização
         self.container = tk.Frame(self.frame, width=1080)
@@ -728,9 +727,9 @@ class AlbumPage:
 
         self.counter_label = tk.Label(self.container, text="0", font=("Arial", 14), bg="white")
         self.counter_label.pack(side="right", anchor="center", pady=10)
-        self.update_counter(str(self.DataAlbum[6]))     
 
-        heart_button = tk.Button(self.container, text="    ❤️", font=("Arial", 16), command=self.likes)
+
+        heart_button = tk.Button(self.container, text="    ❤️", font=("Arial", 16), command=None)
         heart_button.pack(pady=20)
 
         self.list_images()
@@ -749,7 +748,7 @@ class AlbumPage:
         with open("./files/albuns.txt", "w") as file:
             file.writelines(self.data)
         
-        AlbumPage.update_counter(self,self.DataAlbum[6])
+        AlbumPage.update_counter(self.DataAlbum[6])
 
     def list_images(self):
         """ Adcionar paths à listbox. """
@@ -860,25 +859,14 @@ class NotificationPage:
         
         self.get_notifications(self.current_user)
         
-    def get_sender_name(self, sender):
-        """ Ler index do user que enviou a notificação e devolver o seu primeiro nome"""
-    
-        with open("./files/users.txt", "r") as file:
-            lines = file.readlines()
-            for line in lines:
-                parts = line.strip().split(";")
-                if parts[0]==sender:
-                    sender_name = parts[3]
-   
-        return sender_name
-    
+
     def get_notifications(self, user_index):
         
         """ CTT, lê as notificações todas e entrega ao user"""
         
         notifications_path = "./files/notifications.txt"
 
-        with open(notifications_path, "r", encoding="utf-8") as file:
+        with open(notifications_path, "r") as file:
             all_notifications = file.readlines()
             # noti é abreviatura de notification!!
             for line in all_notifications:
@@ -891,33 +879,21 @@ class NotificationPage:
                     noti_day = noti_data[5]
 
                     self.format_notification(noti_sender, noti_type, noti_message, noti_album, noti_day)
-                else:
-                    no_text = "You dont have any new notifications!"
-                    no_data = ""
-                    self.display_notification(no_text, no_data)
-                    break
-                    
 
     
     def format_notification(self, sender, noti_type, message, album, day):
 
         """ Formatar a informação do notifications.txt e criar a mensagem da notificação"""
-        sender_name = self.get_sender_name(sender)
-        # sender_name = user.first_name
-        album_name = AlbumPage.get_album_title(album)
+
+        sender_name = user.mail
         match noti_type:
             case "1":
                 # like num album
-                noti_text = "{0} liked your ({1}) album.".format(sender_name, album_name)
+                noti_text = "{0} liked your album".format(sender_name)
 
-            case "2":
-                # comment
-                noti_text = "{0} added a comment to your ({1}) album: \n {2}.".format(sender_name, album_name, message)
-            case "3":
-                noti_text = "You dont have any new notifications!"
             case _:
-                # caso o tipo não exista
-                noti_text = "erro ao mostrar esta notificação"
+                # comment
+                noti_text = "error"
 
         self.display_notification(noti_text, day)
     
