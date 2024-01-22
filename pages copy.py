@@ -695,8 +695,8 @@ class AlbumPage:
             self.data = file.readlines()
         self.album_index = int(os.path.basename(album_path))
         self.image_index = 0
-        self.DataAlbum = AlbumPage.read_AlbumData(str(self.album_index))
-           
+        self.DataAlbum = self.read_AlbumData()
+        self.update_counter(self.DataAlbum[6])
 
         """Album page """
         self.album_title = self.get_album_title(album_path)
@@ -706,7 +706,6 @@ class AlbumPage:
         self.frame = tk.Frame(app.container)
         self.frame.pack(side="top",anchor="center")
         app.root.title(f"My Photos - {str(self.album_title)}")
-
 
         # frame auxiliar para organização
         self.container = tk.Frame(self.frame, width=1080)
@@ -728,9 +727,9 @@ class AlbumPage:
 
         self.counter_label = tk.Label(self.container, text="0", font=("Arial", 14), bg="white")
         self.counter_label.pack(side="right", anchor="center", pady=10)
-        self.update_counter(str(self.DataAlbum[6]))     
 
-        heart_button = tk.Button(self.container, text="    ❤️", font=("Arial", 16), command=self.likes)
+
+        heart_button = tk.Button(self.container, text="    ❤️", font=("Arial", 16), command=None)
         heart_button.pack(pady=20)
 
         self.list_images()
@@ -749,7 +748,7 @@ class AlbumPage:
         with open("./files/albuns.txt", "w") as file:
             file.writelines(self.data)
         
-        AlbumPage.update_counter(self,self.DataAlbum[6])
+        AlbumPage.update_counter(self.DataAlbum[6])
 
     def list_images(self):
         """ Adcionar paths à listbox. """
