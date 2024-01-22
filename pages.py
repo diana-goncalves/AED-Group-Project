@@ -59,12 +59,12 @@ class App:
             self.show(ProfilePage)
 
     def show_notification_page(self):
-        # if user.mail == "user":
-        #     messagebox.showerror("Need Account", "Please log in or create an account to access")
-        #     self.show(HomePage)
-        # else:
-        #     self.show(NotificationPage)
-        self.show(NotificationPage)
+        if user.mail == "user":
+            messagebox.showerror("Need Account", "Please log in or create an account to access")
+            self.show(HomePage)
+        else:
+            self.show(NotificationPage)
+      
 
     def geometry(self):
         """ Define a geometria da janela principal da aplicação com base no tamanho do ecrã. """
@@ -839,14 +839,25 @@ class NotificationPage:
         
         self.get_notifications(self.current_user)
         
-
+    def get_sender_name(self, sender):
+        """ Ler index do user que enviou a notificação e devolver o seu primeiro nome"""
+    
+        with open("./files/users.txt", "r") as file:
+            lines = file.readlines()
+            for line in lines:
+                parts = line.strip().split(";")
+                if parts[0]==sender:
+                    sender_name = parts[3]
+   
+        return sender_name
+    
     def get_notifications(self, user_index):
         
         """ CTT, lê as notificações todas e entrega ao user"""
         
         notifications_path = "./files/notifications.txt"
 
-        with open(notifications_path, "r") as file:
+        with open(notifications_path, "r", encoding="utf-8") as file:
             all_notifications = file.readlines()
             # noti é abreviatura de notification!!
             for line in all_notifications:
@@ -859,21 +870,33 @@ class NotificationPage:
                     noti_day = noti_data[5]
 
                     self.format_notification(noti_sender, noti_type, noti_message, noti_album, noti_day)
+                else:
+                    no_text = "You dont have any new notifications!"
+                    no_data = ""
+                    self.display_notification(no_text, no_data)
+                    break
+                    
 
     
     def format_notification(self, sender, noti_type, message, album, day):
 
         """ Formatar a informação do notifications.txt e criar a mensagem da notificação"""
-
-        sender_name = user.mail
+        sender_name = self.get_sender_name(sender)
+        # sender_name = user.first_name
+        album_name = AlbumPage.get_album_title(album)
         match noti_type:
             case "1":
                 # like num album
-                noti_text = "{0} liked your album".format(sender_name)
+                noti_text = "{0} liked your ({1}) album.".format(sender_name, album_name)
 
-            case _:
+            case "2":
                 # comment
-                noti_text = "error"
+                noti_text = "{0} added a comment to your ({1}) album: \n {2}.".format(sender_name, album_name, message)
+            case "3":
+                noti_text = "You dont have any new notifications!"
+            case _:
+                # caso o tipo não exista
+                noti_text = "erro ao mostrar esta notificação"
 
         self.display_notification(noti_text, day)
     
