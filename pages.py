@@ -866,7 +866,6 @@ class NotificationPage:
         """ Formatar a informação do notifications.txt e criar a mensagem da notificação"""
 
         sender_name = user.mail
-        print(noti_type)
         match noti_type:
             case "1":
                 # like num album
