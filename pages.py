@@ -797,7 +797,7 @@ class AlbumPage:
 
 # ---------- Notification Page ---------------
 class NotificationPage:
-    
+   
     def __init__(self,app):
         self.app = app
         self.frame = tk.Frame(app.container)
@@ -818,44 +818,58 @@ class NotificationPage:
 
         # Frame que vai ter as notificações
         notifications_frame = tk.Frame(canvas, bg="white")
-        canvas.create_window((0,0), window=notifications_frame, anchor="nw")
+        canvas.create_window((0, 0), window=notifications_frame, anchor="nw")
 
-        # teste
+        # trocar por datas
         data = "22/01/2024"
-        noti = ["not 1 - first notification","not 2 - second notification","not 3 - third notification"]
+        # trocar por mensagens
+        noti = ["not 1 - first notification", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. ", "not 3 - third notification""not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification""not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification", "not 1 - first notification"]
 
         for message in noti:
-            # frame para 1 notificação
-            notification_frame = tk.Frame(notifications_frame, bg="white", width= 850)
-            notification_frame.pack(fill=tk.X, expand=True, padx=40, pady=20)
-            # frame para datas
-            datas_frame = tk.Frame(notification_frame, bg="blue")
-            datas_frame.pack(side="left", fill="y")
-            # frame para texto
-            txt_frame = tk.Frame(notification_frame, bg="red")
-            txt_frame.pack(side="left", fill="y", padx=10)
-            # frame para botões
-            remove_frame = tk.Frame(notification_frame, bg="green")
-            remove_frame.pack(side="right", fill="y")
-            
+            # Frame para 1 notificação
+            notification_frame = tk.Canvas(notifications_frame, bg="white", width=850, height=30)
+            notification_frame.pack(fill=tk.X, padx=40, pady=20)
 
-            # label com data
-            data_noti = tk.Label(datas_frame, text=data, bg="white", width=100)
-            data_noti.pack(side="left", anchor="w")
-            # label com texto da notificação
-            txt_noti = tk.Label(txt_frame, text=message, bg="white", width=600)
-            txt_noti.pack(fill="x", expand=True, anchor="w")
-            # botão remover notificação
-            remove_noti = tk.Button(remove_frame, text="remove", bg="white", width=100)
-            remove_noti.pack(side="right", anchor="e")
+            # Label com data
+            data_noti = tk.Label(notification_frame, text=data, bg="white")
+            data_noti.pack(side="left", anchor="w", padx=20)
 
+            # Label com texto da notificação
+            txt_noti = tk.Label(notification_frame, text=message, bg="white", wraplength=600)
+            txt_noti.pack(side="left", fill="x", anchor="w")
+
+            # Botão remover notificação
+            remove_noti = tk.Button(notification_frame, text="remove", bg="white")
+            remove_noti.pack(side="right", anchor="e", padx=20)
+
+        # Dar uptade à canvas
         canvas.update_idletasks()
+        # Definir o scroll baseado na "bbox" (bounding box) de todos os elementos
         canvas.config(scrollregion=canvas.bbox("all"))
 
+        # Index do user que fez login 
+        self.current_user = user.autor_index
+        
+        self.get_notifications(self.current_user)
+        
+    
 
+    
+    def get_notifications(self, user_index):
+        
+        notifications_path = "./files/notifications.txt"
 
         
 
+        
+        
+        
+    
+    
+    
+    
+    
+    
     def destroy(self):
         """ Destrói o quadro da Página de Notification Page. """
         self.frame.destroy()
