@@ -1,4 +1,4 @@
-1;Teste;Boas;landscape;13/01/2024
-2;Cars;epic car pictures;cars;13/01/2024
-3;Food_Album;epic food pictures;food;13/01/2024
-4;Random;random images;others;20/01/2024;1
+1;Teste;Boas;landscape;13/01/2024;1;0
+2;Cars;epic car pictures;cars;13/01/2024;1;0
+3;Food_Album;epic food pictures;food;13/01/2024;1;0
+4;Random;random images;others;20/01/2024;1;0
