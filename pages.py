@@ -646,13 +646,13 @@ class AlbumPage:
         data = file.readlines()
         file.close()
 
-        current_index = int(os.path.basename(album_path))
+        album_index = int(os.path.basename(album_path))
         album_title = ""
 
         for linha in data:
             values = linha.split(";")
             index = int(values[0])
-            if current_index == index:
+            if album_index == index:
                 album_title = values[1].strip()
                 break
 
@@ -665,7 +665,8 @@ class AlbumPage:
         with open(file_path, "r") as file:
             data = file.readlines()
 
-        self.current_index = int(os.path.basename(album_path))
+        self.album_index = int(os.path.basename(album_path))
+        self.image_index = 0
 
         """Album page """
         self.album_title = self.get_album_title(album_path)
@@ -727,8 +728,8 @@ class AlbumPage:
 
         if imagens:
             # path da imagem atual
-            current_index = 0
-            img_name = imagens[current_index]
+            image_index = self.image_index
+            img_name = imagens[image_index]
             img_path = os.path.join(self.album_path, img_name)
 
             # Resize imagem
@@ -748,16 +749,16 @@ class AlbumPage:
 
     def selection_update(self, index):
         self.list.selection_clear(0, "end")
-        self.current_index = index
-        self.list.selection_set(self.current_index)
+        self.album_index = index
+        self.list.selection_set(index)
     
     def next_image(self):
         #imagem anterior
         imagens = self.images_dir
         total   = len(imagens)
         
-        self.current_index = (self.current_index + 1 ) % total
-        self.selection_update(self.current_index)
+        self.image_index = (self.image_index + 1 ) % total
+        self.selection_update(self.image_index)
         self.view_images()
 
     def prev_image(self):
@@ -765,8 +766,8 @@ class AlbumPage:
         imagens = self.images_dir
         total   = len(imagens)
         
-        self.current_index = (self.current_index - 1 ) % total
-        self.selection_update(self.current_index)
+        self.image_index = (self.image_index - 1 ) % total
+        self.selection_update(self.image_index)
         self.view_images()
 
 
