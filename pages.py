@@ -880,6 +880,7 @@ class NotificationPage:
 
         with open(notifications_path, "r", encoding="utf-8") as file:
             all_notifications = file.readlines()
+            notifications_found = False
             # noti é abreviatura de notification!!
             for line in all_notifications:
                 noti_data = line.strip().split(";")
@@ -891,12 +892,13 @@ class NotificationPage:
                     noti_day = noti_data[5]
 
                     self.format_notification(noti_sender, noti_type, noti_message, noti_album, noti_day)
-                else:
-                    no_text = "You dont have any new notifications!"
-                    no_data = ""
-                    self.display_notification(no_text, no_data)
-                    break
-                    
+
+                    notifications_found = True
+                
+            if not notifications_found:
+                no_text = "You don't have any new notifications!"
+                no_data = ""
+                self.display_notification(no_text, no_data)
 
     
     def format_notification(self, sender, noti_type, message, album, day):
