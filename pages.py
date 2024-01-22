@@ -166,12 +166,13 @@ class HomePage:
     def displayAlbuns(self):
         album_path = "./Albuns"
         albuns_list = os.listdir(album_path)
-
+     
         row_val = 0
         col_val = 0
 
         for album_index in albuns_list:
             current_album_path = os.path.join(album_path, album_index)
+            data_album = AlbumPage.read_AlbumData(album_index)
 
             # Verifica se é um diretório antes da função list_images
             if os.path.isdir(current_album_path):
@@ -198,7 +199,7 @@ class HomePage:
 
                     album_header = tk.Frame(self.image_frame)
                     album_header.grid(row=row_val + 1, column=col_val, padx=5, pady=5, sticky="nw")
-                    title = tk.Label(album_header, text="{} x likes".format(album_title))
+                    title = tk.Label(album_header, text="{} {} likes".format(album_title,data_album[6]))
                     title.pack(side="left", anchor="w")
 
                 col_val += 1
@@ -661,6 +662,17 @@ class AlbumPage:
                 break
 
         return album_title
+    
+    def read_AlbumData(index):
+        """ Lê informações do utilizador do ficheiro users.txt."""
+        ficheiro = open("./files/albuns.txt", "r")
+        linhas = ficheiro.readlines()
+        ficheiro.close()
+        for linha in linhas:
+            linha = linha.split(";")
+            linha[6] = linha[6].replace("\n", "")
+            if linha[0] == index:
+                return linha
 
     def __init__(self,app, album_path):
 
@@ -699,6 +711,8 @@ class AlbumPage:
         self.remover = tk.Button(self.container, width=10, height=2, text="remove image", command=self.remoview_images)
         self.remover.pack(side="bottom", anchor="center")
 
+        heart_button = tk.Button(self.container, text="    ❤️", font=("Arial", 16), command=None)
+        heart_button.pack(pady=20)
 
         self.list_images()
         self.view_images()
@@ -894,21 +908,21 @@ class adminPage:
         self.fill_users()
         self.fill_albuns()
 
-    def read_InfoFileUsers(self,path,aux):
+    def read_InfoFiles(self,path,aux):
         """ Lê informações do utilizador do ficheiro users.txt."""
-        albuns = []
+        data = []
         i=0
         ficheiro = open(path, "r")
         linhas = ficheiro.readlines()
         for linha in linhas:
-            albuns.append([])
+            data.append([])
             linha = linha.split(";")
             linha[aux-1] = linha[aux-1].replace("\n", "")
             for j in range(aux):
-                albuns[i].append(linha[j])
+                data[i].append(linha[j])
             i+=1
         ficheiro.close()
-        return albuns
+        return data
 
     def fill_users(self):
         list_images= self.read_InfoFileUsers("./files/users.txt",5) # Cria a list_images com os dados do ficheiro
