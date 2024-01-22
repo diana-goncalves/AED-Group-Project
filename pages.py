@@ -103,7 +103,7 @@ class Menu:
         """ Inicia o menu e as suas opções.
         Args:
         - app: A instância principal da aplicação. """
-        
+
         menu = tk.Menu(app.root)
         options = tk.Menu(menu)
         options.add_command(label="Home", command=lambda: app.show(HomePage))
@@ -125,8 +125,6 @@ class Menu:
             user.last_name = ""
             app.show(HomePage)
 
-    
-        
 # ---------- Home Page ---------------
 class HomePage:
     def __init__(self, app):
@@ -164,48 +162,53 @@ class HomePage:
         canvas.configure(scrollregion=canvas.bbox("all"))
 
     def displayAlbuns(self):
+        # Suponho que 'album_path' e 'albuns_list' sejam definidos anteriormente nesta função.
         album_path = "./Albuns"
         albuns_list = os.listdir(album_path)
-     
+
         row_val = 0
         col_val = 0
 
         for album_index in albuns_list:
             current_album_path = os.path.join(album_path, album_index)
-            data_album = AlbumPage.read_AlbumData(album_index)
 
-            # Verifica se é um diretório antes da função list_images
+            # Verifica se é um diretório antes de processar as imagens
             if os.path.isdir(current_album_path):
-                # Filtrar apenas arquivos .png
-                images_dir = [file for file in os.listdir(current_album_path) if os.path.isfile(os.path.join(current_album_path, file)) and file.endswith('.png')]
+                data_album = AlbumPage.read_AlbumData(album_index)
 
-                # Ignorar diretórios e .DS_Store
-                images_dir = [file for file in images_dir if file != '.DS_Store']
-
-                first_image = images_dir[0] if images_dir else None
-
-                if first_image:
+                # Verifica se data_album é válido e tem elementos suficientes
+                if data_album and len(data_album) >= 7:
                     album_title = AlbumPage.get_album_title(current_album_path)
 
-                    img_path = os.path.join(current_album_path, first_image)
-                    img = Image.open(img_path)
-                    img = img.resize((240, 240))
-                    img_Tk = ImageTk.PhotoImage(img)
+                    # Aqui, você processa a primeira imagem do álbum para exibição
+                    images_dir = [file for file in os.listdir(current_album_path)
+                                if os.path.isfile(os.path.join(current_album_path, file)) and file.endswith('.png')]
+                    images_dir = [file for file in images_dir if file != '.DS_Store']
+                    first_image = images_dir[0] if images_dir else None
 
-                    label = tk.Label(self.image_frame, image=img_Tk, width=240, height=240)
-                    label.image = img_Tk
-                    label.grid(row=row_val, column=col_val, padx=5, pady=5, sticky="nw")
-                    label.bind("<Button-1>", lambda event, index=album_index: self.show_album(index))
+                    if first_image:
+                        img_path = os.path.join(current_album_path, first_image)
+                        img = Image.open(img_path)
+                        img = img.resize((240, 240))
+                        img_Tk = ImageTk.PhotoImage(img)
 
-                    album_header = tk.Frame(self.image_frame)
-                    album_header.grid(row=row_val + 1, column=col_val, padx=5, pady=5, sticky="nw")
-                    title = tk.Label(album_header, text="{} {} likes".format(album_title,data_album[6]))
-                    title.pack(side="left", anchor="w")
+                        label = tk.Label(self.image_frame, image=img_Tk, width=240, height=240)
+                        label.image = img_Tk
+                        label.grid(row=row_val, column=col_val, padx=5, pady=5, sticky="nw")
+                        label.bind("<Button-1>", lambda event, index=album_index: self.show_album(index))
 
-                col_val += 1
-                if col_val >= 3:
-                    col_val = 0
-                    row_val += 2
+                        album_header = tk.Frame(self.image_frame)
+                        album_header.grid(row=row_val + 1, column=col_val, padx=5, pady=5, sticky="nw")
+                        title = tk.Label(album_header, text="{} {} likes".format(album_title, data_album[6]))
+                        title.pack(side="left", anchor="w")
+
+                        col_val += 1
+                        if col_val >= 3:
+                            col_val = 0
+                            row_val += 2
+                else:
+                    print("erro")
+                    continue  # Simplesmente pula para o próximo álbum
 
 
     def show_album(self, index):
@@ -215,7 +218,6 @@ class HomePage:
     def destroy(self):
         """ Destrói o quadro da Página Inicial para exibir conteúdo dinâmico na abertura de outra janela. """
         self.frame.destroy()
-
 
 # ---------- User management ---------------
 class UserManager:
@@ -246,7 +248,6 @@ class UserManager:
         self.save_user(user)
         return user
 
-
 class User_logged:
     def __init__(self,index,mail,senha,first_name,last_name):
         self.mail = mail
@@ -256,12 +257,10 @@ class User_logged:
         self.last_name = last_name
         self.albums = []  # list_images para armazenar os álbuns do user para exibir no ProfilePage
 
-
 # ---------- Login Page ---------------
 class LoginPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Início de Sessão. """
-
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
@@ -337,7 +336,6 @@ class LoginPage:
 class CreateAccountPage:
     def __init__(self, app):
         """ Inicia o layout da Página de Criação de Conta. """
-
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
@@ -385,7 +383,6 @@ class CreateAccountPage:
         messagebox.showinfo("Create Profile", "User created successfully:\nEmail: {0}\nPassword: {1}".format(email,password))
 
         self.app.show(HomePage)
-
 
 # ---------- Create Album Page ---------------
 class CreateAlbumPage:
@@ -481,10 +478,9 @@ class CreateAlbumPage:
             ficheiro = open("./files/albuns.txt","w")
         else:
             ficheiro = open("./files/albuns.txt","a")
-         # Abre o arquivo de texto onde serão registradas informações do álbum
-        ficheiro.write(str(index)+";"+nome+";"+desc+";"+Categorias+";"+data+";"+user_index+"\n")
+         # Abre o arquivo de texto onde serão registradas informações do álbum (index album; nome; descrição; Categorias; data criação; user index; likes)
+        ficheiro.write(str(index) + ";" + nome + ";" + desc + ";" + Categorias + ";" + data + ";" + user_index + ";" + str(0) + "\n")
         ficheiro.close()
-
 
     def save_and_create_album(self):
         """ Guarda Imagens e cria um album """
@@ -513,13 +509,15 @@ class CreateAlbumPage:
         self.frame.destroy()
 
 # ---------- Profile Page ---------------
-class ProfilePage:  
+class ProfilePage:
     def __init__(self, app):
         """ Inicia o layout do Profile. """
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.pack(fill=tk.BOTH, expand=True)
         app.root.title("My Photos - Profile")
+
+        self.user_albums = self.load_user_albums(user.autor_index)
 
         if user.mail == "adm":
             btn_master = tk.Button(self.frame,text="Administation Menu", command=lambda: app.show(adminPage))
@@ -536,6 +534,16 @@ class ProfilePage:
 
             # Mostra imagens para cada álbum em uma grelha de 3 colunas
             self.display_images_for_album(album_index, image_frame)
+
+    def load_user_albums(self, user_index):
+        """ Carrega álbuns do usuário especificado. """
+        user_albums = []
+        with open("./files/albuns.txt", "r") as file:
+            for line in file:
+                parts = line.strip().split(";")
+                if parts[5] == user_index:  # O índice do usuário é o sexto elemento (indexação começa em 0)
+                    user_albums.append((parts[0], parts[1]))  # Adiciona o index e o nome do álbum
+        return user_albums
 
     def display_images_for_album(self, album_index, image_frame):
         album_path = f"./Albuns/{album_index}"
@@ -662,17 +670,22 @@ class AlbumPage:
                 break
 
         return album_title
-    
+
     def read_AlbumData(index):
-        """ Lê informações do utilizador do ficheiro users.txt."""
-        ficheiro = open("./files/albuns.txt", "r")
-        linhas = ficheiro.readlines()
-        ficheiro.close()
-        for linha in linhas:
-            linha = linha.split(";")
-            linha[6] = linha[6].replace("\n", "")
-            if linha[0] == index:
-                return linha
+        """ Lê informações do álbum do ficheiro albuns.txt. """
+        try:
+            with open("./files/albuns.txt", "r") as file:
+                for line in file:
+                    campos = line.strip().split(";")
+                    if len(campos) < 7:
+                        continue  # Ignora linhas que não têm campos suficientes
+                    if campos[0] == index:
+                        return campos
+        except IOError:
+            print("Erro ao abrir o arquivo albuns.txt")
+            return None
+
+        return None  # Retorna None se o álbum com o índice especificado não for encontrado
 
     def __init__(self,app, album_path):
 
@@ -726,8 +739,8 @@ class AlbumPage:
             self.list.selection_set(0)
         else:
             messagebox.showwarning("ERROR", "no images found.")
-            self.frame.destroy()      
-            
+            self.frame.destroy()
+
 
     def remoview_images(self):
         """ Remove a imagem selecionada na listbox """
@@ -770,12 +783,12 @@ class AlbumPage:
         self.list.selection_clear(0, "end")
         self.album_index = index
         self.list.selection_set(index)
-    
+
     def next_image(self):
         """ Proxima imagem """
         imagens = self.images_dir
         total   = len(imagens)
-        
+
         self.image_index = (self.image_index + 1 ) % total
         self.selection_update(self.image_index)
         self.view_images()
@@ -784,7 +797,7 @@ class AlbumPage:
         """ Imagem anterior """
         imagens = self.images_dir
         total   = len(imagens)
-        
+
         self.image_index = (self.image_index - 1 ) % total
         self.selection_update(self.image_index)
         self.view_images()
