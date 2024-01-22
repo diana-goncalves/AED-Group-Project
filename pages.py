@@ -41,6 +41,9 @@ class App:
         btn_notifications = tk.Button(sidebar, text="Notifications", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_notification_page)
         btn_notifications.pack(fill="x", padx=5, pady=5)
 
+        btn_home = tk.Button(sidebar, text="Home", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(HomePage))
+        btn_home.pack(fill="x", padx=5, pady=5)
+
     def show_create_album(self):
         if user.mail == "user":
             messagebox.showerror("Need Account", "Please log in or create an account to access")
@@ -748,12 +751,13 @@ class AlbumPage:
             label.pack(side="left", padx=5)
 
     def selection_update(self, index):
+        """ Mudar a seleção atual na listbox """
         self.list.selection_clear(0, "end")
         self.album_index = index
         self.list.selection_set(index)
     
     def next_image(self):
-        #imagem anterior
+        """ Proxima imagem """
         imagens = self.images_dir
         total   = len(imagens)
         
@@ -762,7 +766,7 @@ class AlbumPage:
         self.view_images()
 
     def prev_image(self):
-        #proxima imagem
+        """ Imagem anterior """
         imagens = self.images_dir
         total   = len(imagens)
         
@@ -778,11 +782,14 @@ class AlbumPage:
 
 # ---------- Notification Page ---------------
 class NotificationPage:
+    
     def __init__(self,app):
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         app.root.title("My Photos - Notifications")
+
+        
 
     def destroy(self):
         """ Destrói o quadro da Página de Notification Page. """

@@ -1,0 +1,2 @@
+destinatario;remetente;tipo;mensagem;album;data
+2;3;1;0;2;22/01/2024
