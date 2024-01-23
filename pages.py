@@ -846,11 +846,14 @@ class AlbumPage:
         self.counter_label.config(text=str(new_value))
 
     def add_like(self):
+        current_date = date.datetime.now()
+        current_day = current_date.day
 
         if int(self.DataAlbum[0]) not in user.liked_albuns: #pergunta se ja tem like
             self.DataAlbum[6] = str(int(self.DataAlbum[6]) + 1) #add do like
 
-            ##notification
+            with open("./files/notifications.txt","a", encoding="utf-8") as noti_file:
+                noti_file.write("\n{0};{1};1;0;{2};{3};".format(self.DataAlbum[5], user.autor_index,self.DataAlbum[0],current_day))
 
             self.data[int(self.album_index)-1] = ";".join(self.DataAlbum) +"\n" #atualiza a linha dos dados do album
 
