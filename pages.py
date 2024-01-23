@@ -699,7 +699,7 @@ class ExplorePage:
         self.search_bar = tk.Entry(self.search_frame, width=165, textvariable=self.search_text)
         self.search_bar.pack(side="left", pady=(5, 0), padx=5)
 
-        self.search_button = tk.Button(self.search_frame, text="Search:") # , command=self.do_search
+        self.search_button = tk.Button(self.search_frame, text="Search:", command=self.do_search) 
         self.search_button.pack(side="right", pady=(5, 0))
 
         # Adicionado barra de scroll vertical
@@ -723,26 +723,42 @@ class ExplorePage:
 
     def do_search(self):
         """ Função que vai filtrar os albuns em função do que foi escrito na search bar """
-        search_query = self.search_text.get()
-        
-        
-        
-        
-        
-        
-        
-        # new list
-        self.searched_Albuns(search_query)
-    
-    def searched_Albuns(self):
-        album_path = "./Albuns"
-        self.albuns_list = os.listdir(album_path)
+        search_query = self.search_text.get().lower()
+        self.album_path = "./Albuns"
+        self.albuns_list = os.listdir(self.album_path)
+        new_list = []
 
+        for album_index in self.albuns_list:
+            current_album_path = os.path.join(self.album_path, album_index)
+
+            # Verifica se é um diretório antes de processar as imagens
+            if os.path.isdir(current_album_path):
+                data_album = AlbumPage.read_AlbumData(album_index)
+
+                # Verifica se data_album é válido e tem elementos suficientes
+                if data_album and len(data_album) >= 7:
+                    # verificar se algum dado do album é igual à procura
+                    search_match = False
+                    # data é uma lista com o conteudo de cada linha do albuns.txt. data[0] é o index do album
+                    for data in data_album:
+                        if data.lower() == search_query:
+                            search_match = True
+                            new_list.append(data_album[0])
+                            break
+                    
+                if search_match:
+                    for widget in self.image_frame.winfo_children():
+                        widget.destroy()
+                    self.searched_Albuns(new_list)
+    
+    def searched_Albuns(self, new_list):
+        # lista de albuns depois de aplicar o filtro
+        album_list = new_list
         row_val = 0
         col_val = 0
 
-        for album_index in self.albuns_list:
-            current_album_path = os.path.join(album_path, album_index)
+        for album_index in album_list:
+            current_album_path = os.path.join(self.album_path, album_index)
 
             # Verifica se é um diretório antes de processar as imagens
             if os.path.isdir(current_album_path):
@@ -783,7 +799,10 @@ class ExplorePage:
                 else:
                     continue  # Passa para o próximo álbum    
 
-
+    def show_album(self, index):
+        album_path = os.path.join("./Albuns", index)
+        self.app.show_with_Arguments(AlbumPage(self.app,album_path))
+    
     def destroy(self):
         """ Destrói o quadro da Página de Explore. """
         self.frame.destroy()
