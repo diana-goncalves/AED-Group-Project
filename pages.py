@@ -10,11 +10,13 @@ class App:
         """ Inicia a janela principal da aplicação e as configurações básicas. """
         self.root = tk.Tk()
         self.root.title("My Photos")
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.geometry()
 
         self.user_manager = UserManager()
         self.load_session()
+        self.load_albums_for_user(user.autor_index)
 
         self.container = tk.Frame(self.root)
         self.container.pack(fill=tk.BOTH, expand=True)
@@ -93,14 +95,31 @@ class App:
             file.write(user.autor_index)
 
     def load_session(self):
-        """ Carrega a sessão do user. """
-        try:
+        """ Carrega informações da sessão se existirem """
+        if os.path.exists("./files/session.txt"):
             with open("./files/session.txt", "r") as file:
                 autor_index = file.read().strip()
-                if autor_index:
-                    self.user_manager.load_user(autor_index)
+                if autor_index:  # Verifica se o arquivo não está vazio
+                    # Converta o autor_index para um número inteiro
+                    autor_index = int(autor_index)
+                    if user.load_user_data(autor_index):
+                        self.user_manager.load_users()
+                    else:
+                        print("Erro ao carregar dados do usuário.")
+
+    def load_albums_for_user(self, user_index):
+        """ Carrega os álbuns do usuário do arquivo albuns.txt """
+        user.albums = []
+        try:
+            with open("./files/albuns.txt", "r") as file:
+                for line in file:
+                    parts = line.strip().split(";")
+                    if len(parts) >= 6 and parts[5] == str(user_index):  # Verifica se há pelo menos 6 partes
+                        user.albums.append((parts[0], parts[1]))
         except FileNotFoundError:
-            pass  # Não faz nada se o ficheiro de sessão não existir
+            print("Arquivo de álbuns não encontrado.")
+        except Exception as e:
+            print(f"Erro ao ler albuns.txt: {e}")
 
     def show(self, page):
         """ Destroi a página atual e mostra a página especificada. """
@@ -289,6 +308,25 @@ class User_logged:
         self.last_name = last_name
         self.albums = []  # list_images para armazenar os álbuns do user para exibir no ProfilePage
         self.liked_albuns = set()
+
+    def load_user_data(self, autor_index):
+        """ Carrega os dados específicos do usuário a partir do arquivo users.txt """
+        try:
+            with open("./files/users.txt", "r") as file:
+                for line in file:
+                    parts = line.strip().split(";")
+                    if len(parts) >= 5 and parts[0] == str(autor_index):  # Verifica se há pelo menos 5 partes
+                        self.autor_index = parts[0]
+                        self.mail = parts[1]
+                        self.senha = parts[2]
+                        self.first_name = parts[3]
+                        self.last_name = parts[4]
+                        return True  # Retorna True se encontrar o usuário
+        except FileNotFoundError:
+            print("Arquivo de usuários não encontrado.")
+        except Exception as e:
+            print(f"Erro ao ler users.txt: {e}")
+        return False  # Retorna False se houver um erro ou não encontrar o usuário
 
 # ---------- Login Page ---------------
 class LoginPage:
@@ -526,25 +564,32 @@ class CreateAlbumPage:
         ficheiro.close()
 
     def save_and_create_album(self):
-        """ Guarda Imagens e cria um album """
+        """ Guarda Imagens e cria um álbum """
         try:
             if self.selected.get() == "":
                 messagebox.showerror("Error Categories", "Need to select the category,\n try again")
                 return
 
             index = self.create_album_path()
-            aux_img = self.save_images(index)  # retorma uma var que ajuda a saber se ocorreu problema no processo
-            if aux_img == "cancel":  # se sim, pára o processo
+            aux_img = self.save_images(index)
+            if aux_img == "cancel":
                 return
+
             data = date.datetime.now()
             user_index = str(user.autor_index)
+
+            # Adiciona o álbum à lista do usuário
+            user.albums.append((index, self.entry_nome.get()))
+
+            # Salva as informações do álbum no arquivo albuns.txt
             self.save_file_album(self.entry_nome.get(), self.desc_txt.get("1.0", "end-1c"), self.selected.get(),
                                   data.strftime("%d/%m/%Y"), user_index, index)
-            user.albums.append((index, self.entry_nome.get()))
+
             messagebox.showinfo("Album Created!", "Album created successfully")
             self.app.show(ProfilePage)
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred: {str(e)}")
+
 
     def destroy(self):
         """ Destrói o quadro da Página de Criação de Album. """
