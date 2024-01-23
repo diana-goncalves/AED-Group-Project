@@ -895,13 +895,14 @@ class AlbumPage:
             self.remover = tk.Button(self.container, width=10, height=2, text="remove image", command=self.remoview_images)
             self.remover.pack(side="bottom", anchor="center")
 
-        if user.mail != "user":
-            self.counter_label = tk.Label(self.container, text="0", font=("Arial", 14), bg="white")
-            self.counter_label.pack(side="right", anchor="center", pady=10)
-            self.update_counter(str(self.DataAlbum[6]))
+        
+        self.counter_label = tk.Label(self.container, text="0", font=("Arial", 14), bg="white")
+        self.counter_label.pack(side="right", anchor="center", pady=10)
+        self.update_counter(str(self.DataAlbum[6]))
 
-        heart_button = tk.Button(self.container, text="    ❤️", font=("Arial", 16), command=self.add_like)
-        heart_button.pack(pady=20)
+        if user.mail != "user":
+            heart_button = tk.Button(self.container, text="    ❤️", font=("Arial", 16), command=self.add_like)
+            heart_button.pack(pady=20)
         
         hist_frame = tk.LabelFrame(self.frame, text="Comments Section:")
         hist_frame.pack(pady=15, side="bottom", fill="x")
@@ -936,6 +937,13 @@ class AlbumPage:
 
             # Adicionar o comentário ao arquivo
             self.save_comment_to_file(comment_text)#guarda no file
+            self.com_notification(comment_text)
+    
+    def com_notification(self,comment):
+        current_date = date.datetime.now()
+        current_day = current_date.day
+        with open("./files/notifications.txt","a", encoding="utf-8") as noti_file:
+            noti_file.write("\n{0};{1};2;{2};{3};{4};".format(self.DataAlbum[5],user.autor_index,comment,self.DataAlbum[0],current_day))
 
     def load_comments_from_file(self):
         file_path = f"./files/comments_{self.album_index}.txt"#cria o path
@@ -1338,7 +1346,6 @@ class AdminPage:
             colunas = treeview["columns"]
             if treeview == self.users_tree:
                 ficheiro.write("1;adm;12345;First;Last\n")
-            # Iteramos sobre os itens da treeview
             for item in treeview.get_children():
                 # Obtemos os valores de cada coluna para o item atual
                 valores = [treeview.item(item, 'values')[coluna] for coluna in range(len(colunas))]##ver
