@@ -696,11 +696,14 @@ class ExplorePage:
         self.search_frame.pack(side="top", pady=(5, 5))
 
         self.search_text = tk.StringVar()     #variavel que guarda o conteudo inserido na search bar
-        self.search_bar = tk.Entry(self.search_frame, width=165, textvariable=self.search_text)
+        self.search_bar = tk.Entry(self.search_frame, width=150, textvariable=self.search_text)
         self.search_bar.pack(side="left", pady=(5, 0), padx=5)
 
-        self.search_button = tk.Button(self.search_frame, text="Search:", command=self.do_search) 
-        self.search_button.pack(side="right", pady=(5, 0))
+        self.search_button = tk.Button(self.search_frame, text="Search", command=self.do_search) 
+        self.search_button.pack(side="right", pady=(5, 0), anchor="w")
+        # adicionar o botao de limpar pesquisa
+        self.clear_button = tk.Button(self.search_frame, text="CLEAR FILTERS", command=self.undo_search) 
+        self.clear_button.pack(side="right", pady=(5, 0), anchor="e")
 
         # Adicionado barra de scroll vertical
         self.scrollbar = tk.Scrollbar(self.frame, orient="vertical")
@@ -747,8 +750,10 @@ class ExplorePage:
                             break
                     
                 if search_match:
+                    # apagar todos os albuns
                     for widget in self.image_frame.winfo_children():
                         widget.destroy()
+                    # mostrar resultado da pesquisa
                     self.searched_Albuns(new_list)
     
     def searched_Albuns(self, new_list):
@@ -798,6 +803,12 @@ class ExplorePage:
                             row_val += 2
                 else:
                     continue  # Passa para o próximo álbum    
+
+    def undo_search(self):
+        for widget in self.image_frame.winfo_children():
+            widget.destroy()
+
+        HomePage.displayAlbuns(self)
 
     def show_album(self, index):
         album_path = os.path.join("./Albuns", index)
