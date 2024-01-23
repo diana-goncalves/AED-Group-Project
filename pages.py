@@ -321,12 +321,12 @@ class User_logged:
                         self.senha = parts[2]
                         self.first_name = parts[3]
                         self.last_name = parts[4]
-                        return True  # Retorna True se encontrar o usuário
+                        return True  # Retorna True se encontrar o user
         except FileNotFoundError:
             print("Arquivo de usuários não encontrado.")
         except Exception as e:
             print(f"Erro ao ler users.txt: {e}")
-        return False  # Retorna False se houver um erro ou não encontrar o usuário
+        return False  # Retorna False se houver um erro ou não encontrar o user
 
 # ---------- Login Page ---------------
 class LoginPage:
@@ -396,6 +396,8 @@ class LoginPage:
                 user.first_name = users[i][3].strip()
                 user.last_name = users[i][4].strip()
                 self.load_likes_from_file()
+
+                self.app.load_albums_for_user(user.autor_index)
 
                 self.app.show(HomePage)
                 self.app.root.update_idletasks()
@@ -692,7 +694,7 @@ class ExplorePage:
         """ Search Bar """
         self.search_frame = tk.Frame(self.frame)
         self.search_frame.pack(side="top", pady=(5, 5))
-        
+
         self.search_text = tk.StringVar()     #variavel que guarda o conteudo inserido na search bar
         self.search_bar = tk.Entry(self.search_frame, width=100, textvariable=self.search_text)
         self.search_bar.pack(side="top", pady=(5, 0))
@@ -1086,14 +1088,14 @@ class NotificationPage:
 
     def del_notification(self, notification_frame, noti_data):
         """ Delete notification and update notification list."""
-        
+
         notification_frame.destroy()
 
         try:
             if noti_data is not None:
                 for widget in self.notifications_frame.winfo_children():
                     widget.destroy()
-                
+
                 with open(self.notifications_path, "r", encoding="utf-8") as file:
                     lines = file.readlines()
 
@@ -1108,7 +1110,7 @@ class NotificationPage:
         except:
             noti_text = "You dont have any new notifications!"
             self.display_notification(noti_text, None, None)
-            
+
 
     def destroy(self):
         """ Destrói o quadro da Página de Notification Page. """
