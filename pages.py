@@ -647,8 +647,8 @@ class ExplorePage:
         """ Search Bar """
         self.search_frame = tk.Frame(self.frame)
         self.search_frame.pack(side="top", pady=(5, 5))
-        self.search_text = tk.StringVar()
-
+        
+        self.search_text = tk.StringVar()     #variavel que guarda o conteudo inserido na search bar
         self.search_bar = tk.Entry(self.search_frame, width=100, textvariable=self.search_text)
         self.search_bar.pack(side="top", pady=(5, 0))
 
@@ -965,9 +965,9 @@ class NotificationPage:
     def get_notifications(self, user_index):
         """ CTT, lê as notificações todas e entrega ao user"""
 
-        notifications_path = "./files/notifications.txt"
+        self.notifications_path = "./files/notifications.txt"
 
-        with open(notifications_path, "r", encoding="utf-8") as file:
+        with open(self.notifications_path, "r", encoding="utf-8") as file:
             all_notifications = file.readlines()
             notifications_found = False
             # noti é abreviatura de notification!!
@@ -980,17 +980,17 @@ class NotificationPage:
                     noti_album = noti_data[4]
                     noti_day = noti_data[5]
 
-                    self.format_notification(noti_sender, noti_type, noti_message, noti_album, noti_day)
+                    self.format_notification(noti_sender, noti_type, noti_message, noti_album, noti_day, noti_data)
 
                     notifications_found = True
 
             if not notifications_found:
-                no_text = "You don't have any new notifications!"
-                no_data = ""
-                self.display_notification(no_text, no_data)
+                # no caso de não ter notificações
+                noti_text = "You dont have any new notifications!"
+                self.display_notification(noti_text, None, None)
 
 
-    def format_notification(self, sender, noti_type, message, album, day):
+    def format_notification(self, sender, noti_type, message, album, day, noti_data):
         """ Formata a informação do notifications.txt e criar a mensagem da notificação"""
         sender_name = self.get_sender_name(sender)
         # sender_name = user.first_name
@@ -1003,16 +1003,14 @@ class NotificationPage:
             case "2":
                 # comment
                 noti_text = "{0} added a comment to your ({1}) album: \n {2}.".format(sender_name, album_name, message)
-            case "3":
-                noti_text = "You dont have any new notifications!"
             case _:
                 # caso o tipo não exista
                 noti_text = "erro ao mostrar esta notificação"
 
-        self.display_notification(noti_text, day)
+        self.display_notification(noti_text, day, noti_data)
 
 
-    def display_notification(self, noti_text, day):
+    def display_notification(self, noti_text, day, noti_data):
         """ Mostrar as notificações """
         message = noti_text
 
@@ -1028,15 +1026,41 @@ class NotificationPage:
         txt_noti = tk.Label(notification_frame, text=message, bg="white", wraplength=600)
         txt_noti.pack(side="left", fill="x", anchor="w")
 
-        # Botão remover notificação
-        remove_noti = tk.Button(notification_frame, text="remove", bg="white")
-        remove_noti.pack(side="right", anchor="e", padx=20)
+        if noti_data is not None: # verificar se existe notificações, se não tiver não adiciona o botão
+            # Botão remover notificação
+            remove_noti = tk.Button(notification_frame, text="remove", bg="white", command=lambda frame=notification_frame: self.del_notification(frame, noti_data))
+            remove_noti.pack(side="right", anchor="e", padx=20)
 
         # Dar uptade à canvas
         self.canvas.update_idletasks()
         # Definir o scroll baseado na "bbox" (bounding box) de todos os elementos
         self.canvas.config(scrollregion=self.canvas.bbox("all"))
 
+    def del_notification(self, notification_frame, noti_data):
+        """ Delete notification and update notification list."""
+        
+        notification_frame.destroy()
+
+        try:
+            if noti_data is not None:
+                for widget in self.notifications_frame.winfo_children():
+                    widget.destroy()
+                
+                with open(self.notifications_path, "r", encoding="utf-8") as file:
+                    lines = file.readlines()
+
+                    # Filter out the line to be removed
+                    new_lines = [line for line in lines if line.strip().split(";") != noti_data]
+
+                    # Write the modified content back to the file
+                    with open(self.notifications_path, "w", encoding="utf-8") as file:
+                        file.writelines(new_lines)
+
+                self.get_notifications(self.current_user)
+        except:
+            noti_text = "You dont have any new notifications!"
+            self.display_notification(noti_text, None, None)
+            
 
     def destroy(self):
         """ Destrói o quadro da Página de Notification Page. """

@@ -1,4 +1,4 @@
 destinatario;remetente;tipo;mensagem;album;data
-2;3;1;0;2;22/01/2024
-2;3;2;Exemplo de comentário, este é o melhor album de fotos que já vi na minha vida. Estás de Parabéns;3;22/01/2024
-3;2;1;0;4;22/01/2024
+2;3;1;0;2;22/01/2024;
+2;3;2;Exemplo de comentário, este é o melhor album de fotos que já vi na minha vida. Estás de Parabéns;3;22/01/2024;
+3;2;1;0;4;22/01/2024;
