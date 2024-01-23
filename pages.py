@@ -900,11 +900,62 @@ class AlbumPage:
             self.counter_label.pack(side="right", anchor="center", pady=10)
             self.update_counter(str(self.DataAlbum[6]))
 
-            heart_button = tk.Button(self.container, text="    ❤️", font=("Arial", 16), command=self.add_like)
-            heart_button.pack(pady=20)
+        heart_button = tk.Button(self.container, text="    ❤️", font=("Arial", 16), command=self.add_like)
+        heart_button.pack(pady=20)
+        
+        hist_frame = tk.LabelFrame(self.frame, text="Comments Section:")
+        hist_frame.pack(pady=15, side="bottom", fill="x")
+                
+        if user.mail != "user":
+            comment_label = tk.Label(hist_frame, text="Add Comment:")
+            comment_label.grid(row=0, column=0, padx=10, pady=10)
 
+            self.comment_entry = tk.Entry(hist_frame, width=30)
+            self.comment_entry.grid(row=0, column=1, padx=10, pady=10)
+
+            comment_button = tk.Button(hist_frame, text="Add", command=self.add_comment)
+            comment_button.grid(row=0, column=2, padx=10, pady=10)
+
+        self.comment_history = tk.Text(hist_frame, height=10, width=70)
+        self.comment_history.grid(row=0, column=5, padx=5, pady=10)
+
+        comment_scrollbar = tk.Scrollbar(hist_frame, command=self.comment_history.yview)
+        comment_scrollbar.grid(row=0, column=6, sticky="nsew", padx=5, pady=5)
+        self.comment_history.config(yscrollcommand=comment_scrollbar.set)
+
+        self.load_comments_from_file()
         self.list_images()
         self.view_images()
+
+    def add_comment(self):
+        comment_text = self.comment_entry.get()
+        if comment_text:
+            self.comment_history.insert(tk.END, user.first_name+" "+user.last_name+":"+comment_text+"\n")#guarda o index do autor, o nome e o comentario
+            self.comment_history.yview(tk.END)#atualiza a textbox
+            self.comment_entry.delete(0, tk.END)#apaga a entry
+
+            # Adicionar o comentário ao arquivo
+            self.save_comment_to_file(comment_text)#guarda no file
+
+    def load_comments_from_file(self):
+        file_path = f"./files/comments_{self.album_index}.txt"#cria o path
+        if os.path.exists(file_path):#pergunta se existe
+            with open(file_path, 'r', encoding="utf-8") as file:
+                comments = file.readlines()#guarda todo o ficheiro
+
+                for comment in comments:#percorre todas as linhas 
+                    comment = comment.split(";")#cria sub-strings
+                    Author = comment[1]#autor
+                    self.comment_history.insert(tk.END, Author +":"+comment[2]+"\n")#coloca comentario
+                    self.comment_history.yview(tk.END)
+
+
+    def save_comment_to_file(self, comment):
+        # Salvar o comentário em um arquivo
+        file_path = f"./files/comments_{self.album_index}.txt"
+        with open(file_path, 'a', encoding="utf-8") as file:
+            file.write(str(user.autor_index)+";"+user.first_name+" "+user.last_name+";"+comment+"\n")#guarda index do autor, primeiro e ultimo nome, comentario
+
 
     def update_counter(self, new_value):
         self.counter_label.config(text=str(new_value))
@@ -917,7 +968,7 @@ class AlbumPage:
             self.DataAlbum[6] = str(int(self.DataAlbum[6]) + 1) #add do like
 
             with open("./files/notifications.txt","a", encoding="utf-8") as noti_file:
-                noti_file.write("\n{0};{1};1;0;{2};{3};".format(self.DataAlbum[5], user.autor_index,self.DataAlbum[0],current_day)) # adicionar nova linha ao ficheiro das notificações
+                noti_file.write("\n{0};{1};1;0;{2};{3};".format(self.DataAlbum[5], user.autor_index,self.DataAlbum[0],current_day))
 
             self.data[int(self.album_index)-1] = ";".join(self.DataAlbum) +"\n" #atualiza a linha dos dados do album
 
@@ -934,7 +985,7 @@ class AlbumPage:
 
                 self.data[int(self.album_index)-1] = ";".join(self.DataAlbum) +"\n" #refaz a linha
 
-                with open("./files/albuns.txt", "w") as file: #guara todo o conteudo ja actualizado
+                with open("./files/albuns.txt", "w", encoding="utf-8") as file: #guara todo o conteudo ja actualizado
                     file.writelines(self.data)
 
                 user.liked_albuns.remove(int(self.DataAlbum[0])) #remove o index
@@ -942,10 +993,11 @@ class AlbumPage:
                 AlbumPage.update_counter(self,self.DataAlbum[6]) #dá update no contador
 
     def save_likes_to_file(self):
-        with open("./files/likes.txt", 'r') as file: #abre o ficheiro
+        with open("./files/likes.txt", 'r', encoding="utf-8") as file: #abre o ficheiro
             info_likes = file.readlines() #lê todas a linhas
+            
             info_likes[int(user.autor_index)-1] = user.autor_index +";"+ ','.join(map(str,user.liked_albuns))+"\n" #linha do user logado e actualiza com os index dos albuns que tem gosto
-        with open("./files/likes.txt", 'w') as file:#guardo todas as linha
+        with open("./files/likes.txt", 'w', encoding="utf-8") as file:#guardo todas as linha
             file.writelines(info_likes)
 
     def list_images(self):
