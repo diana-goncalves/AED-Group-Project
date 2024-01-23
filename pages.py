@@ -10,15 +10,17 @@ class App:
         """ Inicia a janela principal da aplicação e as configurações básicas. """
         self.root = tk.Tk()
         self.root.title("My Photos")
-        # self.root.protocol("WM_DELETE_WINDOW", self.on_closing)             # ATIVAR DEPOIS !!!
 
         self.geometry()
 
+        # Inicialize UserManager antes de chamar load_session
+        self.user_manager = UserManager()
+        self.load_session()  # Agora é seguro chamar load_session
+
         self.container = tk.Frame(self.root)
-        self.container.pack(fill=tk.BOTH, expand=True) # Configura o comportamento do Frame (self.container) dentro da janela principal (self.root), assegurando que o Frame ocupe e se ajuste dinamicamente ao tamanho da janela.
+        self.container.pack(fill=tk.BOTH, expand=True)
 
         self.create_sidebar()
-        self.user_manager = UserManager()
 
         self.menu = Menu(self)
         self.current = HomePage(self)
@@ -64,7 +66,7 @@ class App:
             self.show(HomePage)
         else:
             self.show(NotificationPage)
-      
+
 
     def geometry(self):
         """ Define a geometria da janela principal da aplicação com base no tamanho do ecrã. """
@@ -81,10 +83,25 @@ class App:
         self.root.geometry("{0}x{1}+{2}+{3}".format(width, height, x, y))
 
     def on_closing(self):
-        """ Pede confirmação para fechar a aplicação e fecha a janela após confirmação. """
-
+        """ Pede confirmação para fechar a aplicação e salva a sessão do usuário antes de fechar. """
         if messagebox.askokcancel("Close", "Do you want to close My Photos?"):
+            self.save_session()  # Adicionado
             self.root.destroy()
+
+    def save_session(self):
+        """ Salva a sessão do usuário atual em um arquivo. """
+        with open("./files/session.txt", "w") as file:
+            file.write(user.autor_index)
+
+    def load_session(self):
+        """ Carrega a sessão do usuário se existir uma salva. """
+        try:
+            with open("./files/session.txt", "r") as file:
+                autor_index = file.read().strip()
+                if autor_index:
+                    self.user_manager.load_user(autor_index)  # Carrega as informações do usuário baseado no índice
+        except FileNotFoundError:
+            pass  # Não faz nada se o arquivo de sessão não existir
 
     def show(self, page):
         """ Destroi a página atual e mostra a página especificada. """
@@ -115,9 +132,10 @@ class Menu:
         menu.add_cascade(label="Options", menu=options)
         app.root.config(menu=menu)
 
-    def logout(self,app):
-        option = messagebox.askquestion("Confirm Logout","Are you sure?")
+    def logout(self, app):
+        option = messagebox.askquestion("Confirm Logout", "Are you sure?")
         if option == "yes":
+            self.clear_session()  # Adicionado
             user.autor_index = "0"
             user.mail = "user"
             user.senha = ""
@@ -126,37 +144,46 @@ class Menu:
             user.liked_albuns = set()
             app.show(HomePage)
 
+    def clear_session(self):
+        """ Limpa o arquivo de sessão quando o usuário faz logout. """
+        open("./files/session.txt", "w").close()
+
 # ---------- Home Page ---------------
 class HomePage:
     def __init__(self, app):
-        """ Inicia o layout da Página Inicial.
-        Args:
-        - app: A instância principal da aplicação. """
-
+        """ Inicia o layout da Página Inicial. """
         self.app = app
         self.frame = tk.Frame(app.container)
         self.frame.pack(fill=tk.BOTH, expand=True)
         app.root.title("My Photos - HomePage")
         Menu(self.app)
 
-        # Adiciona um Canvas para o scroll
-        canvas = tk.Canvas(self.frame)
-        canvas.pack(side="left", fill="both", expand=True)
+        # Frame para centralizar o conteúdo
+        self.content_frame = tk.Frame(self.frame)
+        self.content_frame.pack(side="left", fill=tk.BOTH, expand=True, padx=100)
 
-        # Adiciona uma barra de scroll vertical
-        scrollbar = tk.Scrollbar(self.frame, command=canvas.yview)
-        scrollbar.pack(side="right", fill="y")
-        canvas.configure(yscrollcommand=scrollbar.set)
+        # Adiciona um Canvas para o scroll no frame centralizado
+        self.canvas = tk.Canvas(self.content_frame)
+        self.canvas.pack(side="left", fill="both", expand=True)
+
+        # Frame para a scrollbar, posicionado à direita
+        self.scrollbar_frame = tk.Frame(self.frame)
+        self.scrollbar_frame.pack(side="right", fill="y")
+
+        # Adiciona uma barra de scroll vertical no frame da scrollbar
+        self.scrollbar = tk.Scrollbar(self.scrollbar_frame, command=self.canvas.yview)
+        self.scrollbar.pack(side="right", fill="y")
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
 
         # Conteúdo da HomePage
-        self.image_frame = tk.Frame(canvas, width=400, height=100)
+        self.image_frame = tk.Frame(self.canvas, width=400, height=100)
         self.image_frame.pack(side="top", pady=5)
 
         self.displayAlbuns()
 
         # Configura o Canvas para dar scroll com o rato
-        canvas.bind("<Configure>", lambda event, canvas=canvas: self.on_canvas_configure(event, canvas))
-        canvas.create_window((0, 0), window=self.image_frame, anchor="nw")
+        self.canvas.bind("<Configure>", lambda event, canvas=self.canvas: self.on_canvas_configure(event, canvas))
+        self.canvas.create_window((0, 0), window=self.image_frame, anchor="nw")
 
     def on_canvas_configure(self, event, canvas):
         """ Ajusta a região de rolagem do Canvas quando o tamanho do conteúdo é alterado. """
@@ -226,17 +253,20 @@ class HomePage:
 class UserManager:
     def __init__(self):
         self.users = []
-        self.load_users()
+        self.load_users()  # Carrega os usuários quando uma instância de UserManager é criada
 
     def load_users(self):
-        """ Carrega informações dos user do arquivo users.txt """
-        if not os.path.exists("./files/users.txt"):
-            return
-        with open("./files/users.txt", "r") as file:
-            for line in file:
-                parts = line.strip().split(";")
-                user = User_logged(parts[0], parts[1], parts[2], parts[3], parts[4])
-                self.users.append(user)
+        """ Carrega os usuários de um arquivo. """
+        try:
+            with open("./files/users.txt", "r") as file:
+                for line in file:
+                    parts = line.strip().split(";")
+                    if len(parts) < 5:  # Verifica se a linha tem todos os campos necessários
+                        continue
+                    user = User_logged(parts[0], parts[1], parts[2], parts[3], parts[4])
+                    self.users.append(user)
+        except FileNotFoundError:
+            print("Arquivo de usuários não encontrado.")
 
     def save_user(self, user):
         """ Guarda as informações do user no arquivo users.txt """
@@ -350,7 +380,7 @@ class LoginPage:
                     else:#se nao tiver gostos entra aqui
                         user.liked_albuns = set()
                     break
-    
+
 
 # ---------- Create Account Page ---------------
 class CreateAccountPage:
@@ -537,23 +567,47 @@ class ProfilePage:
         self.frame.pack(fill=tk.BOTH, expand=True)
         app.root.title("My Photos - Profile")
 
+        # Cria um Canvas para o scroll
+        self.canvas = tk.Canvas(self.frame)
+        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=100)  # Adiciona espaçamento horizontal
+
+        # Adiciona uma barra de scroll vertical
+        self.scrollbar = tk.Scrollbar(self.frame, command=self.canvas.yview)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        # Frame interno para o conteúdo que será rolável
+        self.scrollable_frame = tk.Frame(self.canvas)
+        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor=tk.NW)
+
+        self.canvas.bind("<Configure>", self.on_canvas_configure)
+
         self.user_albums = self.load_user_albums(user.autor_index)
 
         if user.mail == "adm":
-            btn_master = tk.Button(self.frame,text="Administation Menu", command=lambda: app.show(adminPage))
+            btn_master = tk.Button(self.scrollable_frame, text="Administation Menu", command=lambda: app.show(adminPage))
             btn_master.pack()
 
         for album_info in user.albums:
             album_index, album_name = album_info
-            label = tk.Label(self.frame, text="Album {0}: {1}".format(album_index, album_name))
+            label = tk.Label(self.scrollable_frame, text="Album {0}: {1}".format(album_index, album_name))
             label.pack()
 
             # Cria um novo frame para as imagens
-            image_frame = tk.Frame(self.frame)
+            image_frame = tk.Frame(self.scrollable_frame)
             image_frame.pack()
 
             # Mostra imagens para cada álbum em uma grelha de 3 colunas
             self.display_images_for_album(album_index, image_frame)
+
+    def on_canvas_configure(self, event):
+        """ Ajusta a região de rolagem do Canvas quando o tamanho do conteúdo é alterado. """
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    def on_canvas_configure(self, event):
+        """ Ajusta a região de rolagem do Canvas quando o tamanho do conteúdo é alterado. """
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
 
     def load_user_albums(self, user_index):
         """ Carrega álbuns do usuário especificado. """
@@ -716,7 +770,7 @@ class AlbumPage:
         self.album_index = int(os.path.basename(album_path))
         self.image_index = 0
         self.DataAlbum = AlbumPage.read_AlbumData(str(self.album_index))
-           
+
 
         """Album page """
         self.album_title = self.get_album_title(album_path)
@@ -750,7 +804,7 @@ class AlbumPage:
         if user.mail != "user":
             self.counter_label = tk.Label(self.container, text="0", font=("Arial", 14), bg="white")
             self.counter_label.pack(side="right", anchor="center", pady=10)
-            self.update_counter(str(self.DataAlbum[6]))     
+            self.update_counter(str(self.DataAlbum[6]))
 
             heart_button = tk.Button(self.container, text="    ❤️", font=("Arial", 16), command=self.add_like)
             heart_button.pack(pady=20)
@@ -760,20 +814,20 @@ class AlbumPage:
 
     def update_counter(self, new_value):
         self.counter_label.config(text=str(new_value))
-    
+
     def add_like(self):
-        
+
         if int(self.DataAlbum[0]) not in user.liked_albuns:#pergunta se ja tem like
             self.DataAlbum[6] = str(int(self.DataAlbum[6]) + 1)#add do like
 
             ##notification
-            
-            self.data[int(self.album_index)-1] = ";".join(self.DataAlbum) +"\n"#atualiza a linha dos dados do album 
+
+            self.data[int(self.album_index)-1] = ";".join(self.DataAlbum) +"\n"#atualiza a linha dos dados do album
 
             with open("./files/albuns.txt", "w") as file:#guarda todo o ficheiro ja com a linha actualizada
                 file.writelines(self.data)
-            
-            user.liked_albuns.add(int(self.DataAlbum[0]))#adiciono o index do album 
+
+            user.liked_albuns.add(int(self.DataAlbum[0]))#adiciono o index do album
             self.save_likes_to_file()#guardo no ficheiro o index do album
             AlbumPage.update_counter(self,self.DataAlbum[6])#dou update do contador
         else:
@@ -789,14 +843,14 @@ class AlbumPage:
                 user.liked_albuns.remove(int(self.DataAlbum[0]))#removo o index
                 self.save_likes_to_file()#actualizo no ficheiro
                 AlbumPage.update_counter(self,self.DataAlbum[6])#dou updateno contador
-    
+
     def save_likes_to_file(self):
-        with open("./files/likes.txt", 'r') as file:#abro o ficheiro   
+        with open("./files/likes.txt", 'r') as file:#abro o ficheiro
             info_likes = file.readlines()#leio todas a linhas
             info_likes[int(user.autor_index)-1] = user.autor_index +";"+ ','.join(map(str,user.liked_albuns))+"\n"#linha do user logado e actualizo com os index dos albuns que ele tem gosto
         with open("./files/likes.txt", 'w') as file:#guardo todas as linha
             file.writelines(info_likes)
-    
+
     def list_images(self):
         """ Adcionar paths à listbox. """
         for path in self.images_dir:
@@ -877,22 +931,29 @@ class AlbumPage:
 
 # ---------- Notification Page ---------------
 class NotificationPage:
-   
-    def __init__(self,app):
+    def __init__(self, app):
         self.app = app
+
+        # Frame principal com espaçamento no lado esquerdo para mover tudo para a direita
         self.frame = tk.Frame(app.container)
-        self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        self.frame.pack(side="top", fill="both", expand=True, padx=(100, 0))  # Aumenta o espaço no lado esquerdo
+
         app.root.title("My Photos - Notifications")
 
         # Label com o username
         user_header = tk.Label(self.frame, text="{}'s new notifications:".format(user.first_name))
         user_header.pack(side="top", anchor="w")
+
+        # Frame para conter Canvas e Scrollbar
+        self.canvas_frame = tk.Frame(self.frame)
+        self.canvas_frame.pack(side="top", fill="both", expand=True)
+
         # Canvas
-        self.canvas = tk.Canvas(self.frame, bg="white", width= 900, height=600)
-        self.canvas.pack(side="left", fill=tk.BOTH, expand=True, padx=40, pady=20)
+        self.canvas = tk.Canvas(self.canvas_frame, bg="white", width=900, height=600)
+        self.canvas.pack(side="left", fill="both", expand=True)
 
         # Adicionar scroll ao canvas
-        scrollbar = tk.Scrollbar(self.frame, command=self.canvas.yview)
+        scrollbar = tk.Scrollbar(self.canvas_frame, command=self.canvas.yview)
         scrollbar.pack(side="right", fill="y")
         self.canvas.configure(yscrollcommand=scrollbar.set)
 
@@ -900,28 +961,27 @@ class NotificationPage:
         self.notifications_frame = tk.Frame(self.canvas, bg="white")
         self.canvas.create_window((0, 0), window=self.notifications_frame, anchor="nw")
 
-        
-        # Index do user que fez login 
+        # Index do user que fez login
         self.current_user = user.autor_index
-        
+
         self.get_notifications(self.current_user)
-        
+
     def get_sender_name(self, sender):
         """ Ler index do user que enviou a notificação e devolver o seu primeiro nome"""
-    
+
         with open("./files/users.txt", "r") as file:
             lines = file.readlines()
             for line in lines:
                 parts = line.strip().split(";")
                 if parts[0]==sender:
                     sender_name = parts[3]
-   
+
         return sender_name
-    
+
     def get_notifications(self, user_index):
-        
+
         """ CTT, lê as notificações todas e entrega ao user"""
-        
+
         notifications_path = "./files/notifications.txt"
 
         with open(notifications_path, "r", encoding="utf-8") as file:
@@ -940,13 +1000,13 @@ class NotificationPage:
                     self.format_notification(noti_sender, noti_type, noti_message, noti_album, noti_day)
 
                     notifications_found = True
-                
+
             if not notifications_found:
                 no_text = "You don't have any new notifications!"
                 no_data = ""
                 self.display_notification(no_text, no_data)
 
-    
+
     def format_notification(self, sender, noti_type, message, album, day):
 
         """ Formatar a informação do notifications.txt e criar a mensagem da notificação"""
@@ -968,10 +1028,10 @@ class NotificationPage:
                 noti_text = "erro ao mostrar esta notificação"
 
         self.display_notification(noti_text, day)
-    
-    
+
+
     def display_notification(self, noti_text, day):
-        
+
         """ Mostrar as notificações """
         message = noti_text
 
