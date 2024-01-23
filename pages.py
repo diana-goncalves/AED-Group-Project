@@ -163,7 +163,7 @@ class HomePage:
         canvas.configure(scrollregion=canvas.bbox("all"))
 
     def displayAlbuns(self):
-        # Suponho que 'album_path' e 'albuns_list' sejam definidos anteriormente nesta função.
+        
         album_path = "./Albuns"
         albuns_list = os.listdir(album_path)
 
@@ -181,7 +181,7 @@ class HomePage:
                 if data_album and len(data_album) >= 7:
                     album_title = AlbumPage.get_album_title(current_album_path)
 
-                    # Aqui, você processa a primeira imagem do álbum para exibição
+                    # Processa a primeira imagem do álbum para exibição
                     images_dir = [file for file in os.listdir(current_album_path)
                                 if os.path.isfile(os.path.join(current_album_path, file)) and file.endswith('.png')]
                     images_dir = [file for file in images_dir if file != '.DS_Store']
@@ -200,16 +200,18 @@ class HomePage:
 
                         album_header = tk.Frame(self.image_frame)
                         album_header.grid(row=row_val + 1, column=col_val, padx=5, pady=5, sticky="nw")
-                        title = tk.Label(album_header, text="{} {} likes".format(album_title, data_album[6]))
-                        title.pack(side="left", anchor="w")
+                        title = tk.Label(album_header, text="{}  - ".format(album_title))
+                        title.pack(side="left")
+                        likes = tk.Label(album_header, text="{} likes".format(data_album[6]))
+                        likes.pack(side="right", fill="x")
 
                         col_val += 1
-                        if col_val >= 3:
+                        if col_val >= 4:
                             col_val = 0
                             row_val += 2
                 else:
                     print("erro")
-                    continue  # Simplesmente pula para o próximo álbum
+                    continue  # Passa para o próximo álbum
 
 
     def show_album(self, index):

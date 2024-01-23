@@ -2,3 +2,4 @@
 2;Cars;epic car pictures;cars;13/01/2024;1;23
 3;Food_Album;epic food pictures;food;13/01/2024;1;6
 4;Random;random images;others;20/01/2024;1;10
+5;Animals;Funny animal pictures;nature;23/01/2024;4;1
