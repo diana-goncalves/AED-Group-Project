@@ -32,7 +32,10 @@ class App:
         sidebar = tk.Frame(self.container, bg="gray", width=200)
         sidebar.pack(fill="y", side="left")
 
-        btn_profile = tk.Button(sidebar, text="Profile", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_profile_page)
+        btn_home = tk.Button(sidebar, text="Home", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(HomePage))
+        btn_home.pack(fill="x", padx=5, pady=5)
+        
+        btn_profile = tk.Button(sidebar, text="{} Profile".format(user.first_name), bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_profile_page)
         btn_profile.pack(fill="x", padx=5, pady=5)
 
         btn_profile = tk.Button(sidebar, text="Create Album", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_create_album)
@@ -44,8 +47,6 @@ class App:
         btn_notifications = tk.Button(sidebar, text="Notifications", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_notification_page)
         btn_notifications.pack(fill="x", padx=5, pady=5)
 
-        btn_home = tk.Button(sidebar, text="Home", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(HomePage))
-        btn_home.pack(fill="x", padx=5, pady=5)
 
     def show_create_album(self):
         if user.mail == "user":
