@@ -577,7 +577,7 @@ class ProfilePage:
         self.user_albums = self.load_user_albums(user.autor_index)
 
         if user.mail == "adm":
-            btn_master = tk.Button(self.scrollable_frame, text="Administation Menu", command=lambda: app.show(adminPagA))
+            btn_master = tk.Button(self.scrollable_frame, text="Administation Menu", command=lambda: app.show(AdminPage))
             btn_master.pack()
 
         for album_info in user.albums:
