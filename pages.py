@@ -123,6 +123,7 @@ class Menu:
             user.senha = ""
             user.first_name = ""
             user.last_name = ""
+            user.liked_albuns = set()
             app.show(HomePage)
 
 # ---------- Home Page ---------------
@@ -246,6 +247,8 @@ class UserManager:
         user = User_logged(index, mail, senha, first_name, last_name)
         self.users.append(user)
         self.save_user(user)
+        with open("./files/likes.txt", "a") as file:
+            file.write(str(index)+";"+"\n")
         return user
 
 class User_logged:
@@ -256,6 +259,7 @@ class User_logged:
         self.first_name = first_name
         self.last_name = last_name
         self.albums = []  # list_images para armazenar os álbuns do user para exibir no ProfilePage
+        self.liked_albuns = set()
 
 # ---------- Login Page ---------------
 class LoginPage:
@@ -326,11 +330,25 @@ class LoginPage:
                 user.senha = users[i][2].strip()
                 user.first_name = users[i][3].strip()
                 user.last_name = users[i][4].strip()
+                self.load_likes_from_file()
+
                 #
                 self.app.show(HomePage)
                 self.app.root.update_idletasks()
                 return
         messagebox.showerror("Invalid Login", "Wrong Credentials")
+
+    def load_likes_from_file(self):
+        with open("./files/likes.txt", 'r') as file:#abro o ficheiro
+            for line in file:#percorro linha a linha
+                user_index, liked_albums = line.strip().split(';')#divido
+                if int(user_index) == int(user.autor_index):
+                    if liked_albums:#se tiver algum gosto entra aqui
+                        user.liked_albuns = set(map(int, liked_albums.split(',')))
+                    else:#se nao tiver gostos entra aqui
+                        user.liked_albuns = set()
+                    break
+    
 
 # ---------- Create Account Page ---------------
 class CreateAccountPage:
@@ -723,15 +741,17 @@ class AlbumPage:
         self.list = tk.Listbox(self.container, bg="white", width=200, height= 15)
         self.list.pack(side="top", padx=12)
         # botao para remover imagem selecionada
-        self.remover = tk.Button(self.container, width=10, height=2, text="remove image", command=self.remoview_images)
-        self.remover.pack(side="bottom", anchor="center")
+        if user.autor_index == self.DataAlbum[5]:
+            self.remover = tk.Button(self.container, width=10, height=2, text="remove image", command=self.remoview_images)
+            self.remover.pack(side="bottom", anchor="center")
 
-        self.counter_label = tk.Label(self.container, text="0", font=("Arial", 14), bg="white")
-        self.counter_label.pack(side="right", anchor="center", pady=10)
-        self.update_counter(str(self.DataAlbum[6]))     
+        if user.mail != "user":
+            self.counter_label = tk.Label(self.container, text="0", font=("Arial", 14), bg="white")
+            self.counter_label.pack(side="right", anchor="center", pady=10)
+            self.update_counter(str(self.DataAlbum[6]))     
 
-        heart_button = tk.Button(self.container, text="    ❤️", font=("Arial", 16), command=self.likes)
-        heart_button.pack(pady=20)
+            heart_button = tk.Button(self.container, text="    ❤️", font=("Arial", 16), command=self.add_like)
+            heart_button.pack(pady=20)
 
         self.list_images()
         self.view_images()
@@ -739,18 +759,42 @@ class AlbumPage:
     def update_counter(self, new_value):
         self.counter_label.config(text=str(new_value))
     
-    def likes(self):
-        self.DataAlbum[6] = str(int(self.DataAlbum[6]) + 1)
-
-        ##notification
+    def add_like(self):
         
-        self.data[int(self.album_index)-1] = ";".join(self.DataAlbum) +"\n"
+        if int(self.DataAlbum[0]) not in user.liked_albuns:#pergunta se ja tem like
+            self.DataAlbum[6] = str(int(self.DataAlbum[6]) + 1)#add do like
 
-        with open("./files/albuns.txt", "w") as file:
-            file.writelines(self.data)
-        
-        AlbumPage.update_counter(self,self.DataAlbum[6])
+            ##notification
+            
+            self.data[int(self.album_index)-1] = ";".join(self.DataAlbum) +"\n"#atualiza a linha dos dados do album 
 
+            with open("./files/albuns.txt", "w") as file:#guarda todo o ficheiro ja com a linha actualizada
+                file.writelines(self.data)
+            
+            user.liked_albuns.add(int(self.DataAlbum[0]))#adiciono o index do album 
+            self.save_likes_to_file()#guardo no ficheiro o index do album
+            AlbumPage.update_counter(self,self.DataAlbum[6])#dou update do contador
+        else:
+            op = messagebox.askquestion("you already like it","Want to remove the like?")#ja deu like, pergunto se quer tirar
+            if op == "yes":#se for sim
+                self.DataAlbum[6] = str(int(self.DataAlbum[6]) - 1)#tiro o like
+
+                self.data[int(self.album_index)-1] = ";".join(self.DataAlbum) +"\n"#refaço a linha
+
+                with open("./files/albuns.txt", "w") as file:#guardo todo o conteudo ja actualizado
+                    file.writelines(self.data)
+
+                user.liked_albuns.remove(int(self.DataAlbum[0]))#removo o index
+                self.save_likes_to_file()#actualizo no ficheiro
+                AlbumPage.update_counter(self,self.DataAlbum[6])#dou updateno contador
+    
+    def save_likes_to_file(self):
+        with open("./files/likes.txt", 'r') as file:#abro o ficheiro   
+            info_likes = file.readlines()#leio todas a linhas
+            info_likes[int(user.autor_index)-1] = user.autor_index +";"+ ','.join(map(str,user.liked_albuns))+"\n"#linha do user logado e actualizo com os index dos albuns que ele tem gosto
+        with open("./files/likes.txt", 'w') as file:#guardo todas as linha
+            file.writelines(info_likes)
+    
     def list_images(self):
         """ Adcionar paths à listbox. """
         for path in self.images_dir:
@@ -1020,13 +1064,13 @@ class adminPage:
         return data
 
     def fill_users(self):
-        list_images= self.read_InfoFileUsers("./files/users.txt",5) # Cria a list_images com os dados do ficheiro
+        list_images= self.read_InfoFiles("./files/users.txt",5) # Cria a list_images com os dados do ficheiro
         self.users_tree.delete(*self.users_tree.get_children()) # Apaga o conteudo
         for i in range(1,len(list_images)): # Preenche com todo o conteudo do ficheiro
             self.users_tree.insert("","end", values= (list_images[i][0],list_images[i][1],list_images[i][2],list_images[i][3],list_images[i][4]))
 
     def fill_albuns(self):
-        list_images= self.read_InfoFileUsers("./files/albuns.txt",6)
+        list_images= self.read_InfoFiles("./files/albuns.txt",6)
         self.album_tree.delete(*self.album_tree.get_children())
         for i in range(len(list_images)):
             self.album_tree.insert("","end", values= (list_images[i][0],list_images[i][1],list_images[i][2],list_images[i][3],list_images[i][4],list_images[i][5]))
