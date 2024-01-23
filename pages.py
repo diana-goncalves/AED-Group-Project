@@ -34,7 +34,7 @@ class App:
 
         btn_home = tk.Button(sidebar, text="Home", bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command=lambda: self.show(HomePage))
         btn_home.pack(fill="x", padx=5, pady=5)
-        
+
         btn_profile = tk.Button(sidebar, text="{} Profile".format(user.first_name), bg="white", pady=10, padx=5, relief="raised", cursor="hand2", command= self.show_profile_page)
         btn_profile.pack(fill="x", padx=5, pady=5)
 
@@ -106,10 +106,10 @@ class App:
                     if user.load_user_data(autor_index):
                         self.user_manager.load_users()
                     else:
-                        print("Erro ao carregar dados do usuário.")
+                        print("Erro ao carregar dados do utilizador.")
 
     def load_albums_for_user(self, user_index):
-        """ Carrega os álbuns do usuário do arquivo albuns.txt """
+        """ Carrega os álbuns do utilizador do arquivo albuns.txt """
         user.albums = []
         try:
             with open("./files/albuns.txt", "r") as file:
@@ -273,7 +273,7 @@ class UserManager:
         self.load_users()
 
     def load_users(self):
-        """ Carrega os usuários de um arquivo. """
+        """ Carrega os utilizadors de um arquivo. """
         try:
             with open("./files/users.txt", "r") as file:
                 for line in file:
@@ -283,7 +283,7 @@ class UserManager:
                     user = User_logged(parts[0], parts[1], parts[2], parts[3], parts[4])
                     self.users.append(user)
         except FileNotFoundError:
-            print("Arquivo de usuários não encontrado.")
+            print("Arquivo de utilizadors não encontrado.")
 
     def save_user(self, user):
         """ Guarda as informações do user no arquivo users.txt """
@@ -311,7 +311,7 @@ class User_logged:
         self.liked_albuns = set()
 
     def load_user_data(self, autor_index):
-        """ Carrega os dados específicos do usuário a partir do arquivo users.txt """
+        """ Carrega os dados específicos do utilizador a partir do arquivo users.txt """
         try:
             with open("./files/users.txt", "r") as file:
                 for line in file:
@@ -324,7 +324,7 @@ class User_logged:
                         self.last_name = parts[4]
                         return True  # Retorna True se encontrar o user
         except FileNotFoundError:
-            print("Arquivo de usuários não encontrado.")
+            print("Arquivo de utilizadors não encontrado.")
         except Exception as e:
             print(f"Erro ao ler users.txt: {e}")
         return False  # Retorna False se houver um erro ou não encontrar o user
@@ -386,7 +386,7 @@ class LoginPage:
 
     def login(self):
         """ Realiza a ação de início de sessão e verifica as credenciais do utilizador. """
-        users = self.read_InfoFileUsersUser()  # Lê os usuários
+        users = self.read_InfoFileUsersUser()  # Lê os utilizadors
 
         for i in range(len(users)):
             if str(self.user_email.get()) == str(users[i][1].strip()) and str(self.user_senha.get()) == str(users[i][2].strip()):
@@ -581,7 +581,7 @@ class CreateAlbumPage:
             data = date.datetime.now()
             user_index = str(user.autor_index)
 
-            # Adiciona o álbum à lista do usuário
+            # Adiciona o álbum à lista do utilizador
             user.albums.append((index, self.entry_nome.get()))
 
             # Salva as informações do álbum no arquivo albuns.txt
@@ -645,7 +645,7 @@ class ProfilePage:
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
     def load_user_albums(self, user_index):
-        """ Carrega álbuns do usuário especificado. """
+        """ Carrega álbuns do utilizador especificado. """
         user_albums = []
         with open("./files/albuns.txt", "r") as file:
             for line in file:
@@ -686,7 +686,7 @@ class ProfilePage:
 
 # ---------- Explore Page ---------------
 class ExplorePage:
-    
+
     def __init__(self, app):
         self.app = app
         self.frame = tk.Frame(app.container)
@@ -698,14 +698,14 @@ class ExplorePage:
         self.search_frame.pack(side="top", pady=(5, 5))
 
         self.search_text = tk.StringVar()     #variavel que guarda o conteudo inserido na search bar
-        self.search_bar = tk.Entry(self.search_frame, width=150, textvariable=self.search_text)
+        self.search_bar = tk.Entry(self.search_frame, width=90, textvariable=self.search_text)
         self.search_bar.insert(0,"You can search for an album name, category, number of likes or even album description!")
         self.search_bar.pack(side="left", pady=(5, 0), padx=5)
 
-        self.search_button = tk.Button(self.search_frame, text="Search", command=self.do_search) 
+        self.search_button = tk.Button(self.search_frame, text="Search", command=self.do_search)
         self.search_button.pack(side="right", pady=(5, 0), anchor="w", padx=5)
         # adicionar o botao de limpar pesquisa
-        self.clear_button = tk.Button(self.search_frame, text="CLEAR FILTERS", command=self.undo_search) 
+        self.clear_button = tk.Button(self.search_frame, text="CLEAR FILTERS", command=self.undo_search)
         self.clear_button.pack(side="right", pady=(5, 0), anchor="e")
 
         # Adicionado barra de scroll vertical
@@ -723,7 +723,7 @@ class ExplorePage:
         HomePage.displayAlbuns(self)
         self.image_frame.update_idletasks()
         self.canvas.config(scrollregion=self.canvas.bbox("all"))
-        
+
         # Configuração a barra de scroll
         self.scrollbar.config(command=self.canvas.yview)
 
@@ -752,7 +752,7 @@ class ExplorePage:
                             new_list.append(data_album[0])
                             search_match_found = True
                             break
-                    
+
         if search_match_found:
             # apagar todos os albuns
             for widget in self.image_frame.winfo_children():
@@ -764,7 +764,7 @@ class ExplorePage:
             messagebox.showwarning("No Results", "no results found for {}".format(search_query))
             self.search_bar.delete(0,"end")
 
-    
+
     def searched_Albuns(self, new_list):
         # lista de albuns depois de aplicar o filtro
         album_list = new_list
@@ -811,7 +811,7 @@ class ExplorePage:
                             col_val = 0
                             row_val += 2
                 else:
-                    continue  # Passa para o próximo álbum    
+                    continue  # Passa para o próximo álbum
 
     def undo_search(self):
         for widget in self.image_frame.winfo_children():
@@ -822,7 +822,7 @@ class ExplorePage:
     def show_album(self, index):
         album_path = os.path.join("./Albuns", index)
         self.app.show_with_Arguments(AlbumPage(self.app,album_path))
-    
+
     def destroy(self):
         """ Destrói o quadro da Página de Explore. """
         self.frame.destroy()
@@ -904,7 +904,7 @@ class AlbumPage:
             self.remover = tk.Button(self.container, width=10, height=2, text="remove image", command=self.remoview_images)
             self.remover.pack(side="bottom", anchor="center")
 
-        
+
         self.counter_label = tk.Label(self.container, text="0", font=("Arial", 14), bg="white")
         self.counter_label.pack(side="right", anchor="center", pady=10)
         self.update_counter(str(self.DataAlbum[6]))
@@ -912,10 +912,10 @@ class AlbumPage:
         if user.mail != "user":
             heart_button = tk.Button(self.container, text="    ❤️", font=("Arial", 16), command=self.add_like)
             heart_button.pack(pady=20)
-        
+
         hist_frame = tk.LabelFrame(self.frame, text="Comments Section:")
         hist_frame.pack(pady=15, side="bottom", fill="x")
-                
+
         if user.mail != "user":
             comment_label = tk.Label(hist_frame, text="Add Comment:")
             comment_label.grid(row=0, column=0, padx=10, pady=10)
@@ -947,7 +947,7 @@ class AlbumPage:
             # Adicionar o comentário ao arquivo
             self.save_comment_to_file(comment_text)# guarda no file
             self.com_notification(comment_text)
-    
+
     def com_notification(self,comment):
         current_date = date.datetime.now()
         current_day = current_date.day
@@ -960,7 +960,7 @@ class AlbumPage:
             with open(file_path, 'r', encoding="utf-8") as file:
                 comments = file.readlines() # guarda todo o ficheiro
 
-                for comment in comments: # percorre todas as linhas 
+                for comment in comments: # percorre todas as linhas
                     comment = comment.split(";")# cria sub-strings
                     Author = comment[1] # autor
                     self.comment_history.insert(tk.END, Author +":"+comment[2]+"\n") # coloca comentario
@@ -1012,7 +1012,7 @@ class AlbumPage:
     def save_likes_to_file(self):
         with open("./files/likes.txt", 'r', encoding="utf-8") as file: # abre o ficheiro
             info_likes = file.readlines() # lê todas a linhas
-            
+
             info_likes[int(user.autor_index)-1] = user.autor_index +";"+ ','.join(map(str,user.liked_albuns))+"\n" # linha do user logado e actualiza com o index dos albuns que tem gosto
         with open("./files/likes.txt", 'w', encoding="utf-8") as file:# guardo todas as linhas
             file.writelines(info_likes)
