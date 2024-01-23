@@ -209,12 +209,12 @@ class HomePage:
 
     def displayAlbuns(self):
         album_path = "./Albuns"
-        albuns_list = os.listdir(album_path)
+        self.albuns_list = os.listdir(album_path)
 
         row_val = 0
         col_val = 0
 
-        for album_index in albuns_list:
+        for album_index in self.albuns_list:
             current_album_path = os.path.join(album_path, album_index)
 
             # Verifica se é um diretório antes de processar as imagens
@@ -694,61 +694,93 @@ class ExplorePage:
         self.search_frame.pack(side="top", pady=(5, 5))
         
         self.search_text = tk.StringVar()     #variavel que guarda o conteudo inserido na search bar
-        self.search_bar = tk.Entry(self.search_frame, width=100, textvariable=self.search_text)
-        self.search_bar.pack(side="top", pady=(5, 0))
+        self.search_bar = tk.Entry(self.search_frame, width=165, textvariable=self.search_text)
+        self.search_bar.pack(side="left", pady=(5, 0), padx=5)
 
-        self.search_button = tk.Button(self.search_frame, text="Search:", command=self.do_search)
-        self.search_button.pack(side="top", pady=(5, 0))
+        self.search_button = tk.Button(self.search_frame, text="Search:") # , command=self.do_search
+        self.search_button.pack(side="right", pady=(5, 0))
 
         # Adicionado barra de scroll vertical
         self.scrollbar = tk.Scrollbar(self.frame, orient="vertical")
         self.scrollbar.pack(side="right", fill="y")
 
         # Canvas para as imagens
-        self.canvas = tk.Canvas(self.frame, yscrollcommand=self.scrollbar.set, width=400, height=300)
+        self.canvas = tk.Canvas(self.frame, yscrollcommand=self.scrollbar.set, width=400, height=600)
         self.canvas.pack(side="top", pady=5, expand=True, fill=tk.BOTH)
 
         # Frame interno que contem as imagens
         self.image_frame = tk.Frame(self.canvas)
         self.canvas.create_window((0, 0), window=self.image_frame, anchor=tk.NW)
 
+        HomePage.displayAlbuns(self)
+        self.image_frame.update_idletasks()
+        self.canvas.config(scrollregion=self.canvas.bbox("all"))
+        
         # Configuração a barra de scroll
         self.scrollbar.config(command=self.canvas.yview)
 
     def do_search(self):
+        """ Função que vai filtrar os albuns em função do que foi escrito na search bar """
         search_query = self.search_text.get()
-        self.displayAlbum(search_query)
-
-    def displayAlbum(self, album_index):
-        for widget in self.image_frame.winfo_children():
-            widget.destroy()
-
-        album_path = f"./Albuns/{album_index}"
-        images_dir = os.listdir(album_path)
-
-        image_files = [image for image in images_dir if image.endswith('.png')]
+        
+        
+        
+        
+        
+        
+        
+        # new list
+        self.searched_Albuns(search_query)
+    
+    def searched_Albuns(self):
+        album_path = "./Albuns"
+        self.albuns_list = os.listdir(album_path)
 
         row_val = 0
         col_val = 0
 
-        for image_file in image_files:
-            img_path = os.path.join(album_path, image_file)
-            img = Image.open(img_path)
-            img = img.resize((240, 240))
-            img_tk = ImageTk.PhotoImage(img)
+        for album_index in self.albuns_list:
+            current_album_path = os.path.join(album_path, album_index)
 
-            label = tk.Label(self.image_frame, image=img_tk, width=240, height=240)
-            label.image = img_tk
-            label.grid(row=row_val, column=col_val, padx=5, pady=5, sticky="nw")
+            # Verifica se é um diretório antes de processar as imagens
+            if os.path.isdir(current_album_path):
+                data_album = AlbumPage.read_AlbumData(album_index)
 
-            col_val += 1
-            if col_val >= 3:
-                col_val = 0
-                row_val += 1
+                # Verifica se data_album é válido e tem elementos suficientes
+                if data_album and len(data_album) >= 7:
+                    album_title = AlbumPage.get_album_title(current_album_path)
 
-        # Atualiza o tamanho do frame interno ao tamanho das imagens
-        self.image_frame.update_idletasks()
-        self.canvas.config(scrollregion=self.canvas.bbox("all"))
+                    # Processa a primeira imagem do álbum para exibição
+                    images_dir = [file for file in os.listdir(current_album_path)
+                                if os.path.isfile(os.path.join(current_album_path, file)) and file.endswith('.png')]
+                    images_dir = [file for file in images_dir if file != '.DS_Store']
+                    first_image = images_dir[0] if images_dir else None
+
+                    if first_image:
+                        img_path = os.path.join(current_album_path, first_image)
+                        img = Image.open(img_path)
+                        img = img.resize((240, 240))
+                        img_Tk = ImageTk.PhotoImage(img)
+
+                        label = tk.Label(self.image_frame, image=img_Tk, width=240, height=240)
+                        label.image = img_Tk
+                        label.grid(row=row_val, column=col_val, padx=5, pady=5, sticky="nw")
+                        label.bind("<Button-1>", lambda event, index=album_index: self.show_album(index))
+
+                        album_header = tk.Frame(self.image_frame)
+                        album_header.grid(row=row_val + 1, column=col_val, padx=5, pady=5, sticky="nw")
+                        title = tk.Label(album_header, text="{}  - ".format(album_title))
+                        title.pack(side="left")
+                        likes = tk.Label(album_header, text="{} likes".format(data_album[6]))
+                        likes.pack(side="right", fill="x")
+
+                        col_val += 1
+                        if col_val >= 4:
+                            col_val = 0
+                            row_val += 2
+                else:
+                    continue  # Passa para o próximo álbum    
+
 
     def destroy(self):
         """ Destrói o quadro da Página de Explore. """
@@ -853,7 +885,7 @@ class AlbumPage:
             self.DataAlbum[6] = str(int(self.DataAlbum[6]) + 1) #add do like
 
             with open("./files/notifications.txt","a", encoding="utf-8") as noti_file:
-                noti_file.write("\n{0};{1};1;0;{2};{3};".format(self.DataAlbum[5], user.autor_index,self.DataAlbum[0],current_day))
+                noti_file.write("\n{0};{1};1;0;{2};{3};".format(self.DataAlbum[5], user.autor_index,self.DataAlbum[0],current_day)) # adicionar nova linha ao ficheiro das notificações
 
             self.data[int(self.album_index)-1] = ";".join(self.DataAlbum) +"\n" #atualiza a linha dos dados do album
 
