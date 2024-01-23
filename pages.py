@@ -962,7 +962,7 @@ class AlbumPage:
 
     def add_like(self):
         current_date = date.datetime.now()
-        current_day = current_date.day
+        current_day = current_date.strftime("%d/%m/%Y")
 
         if int(self.DataAlbum[0]) not in user.liked_albuns: #pergunta se ja tem like
             self.DataAlbum[6] = str(int(self.DataAlbum[6]) + 1) #add do like
