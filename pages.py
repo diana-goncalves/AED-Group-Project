@@ -72,8 +72,8 @@ class App:
     def geometry(self):
         """ Define a geometria da janela principal da aplicação com base no tamanho do ecrã. """
 
-        width = 1280
-        height = 720
+        width = 1350
+        height = 758
 
         screenwidth = self.root.winfo_screenwidth()
         screenheight = self.root.winfo_screenheight()
@@ -685,6 +685,7 @@ class ProfilePage:
 
 # ---------- Explore Page ---------------
 class ExplorePage:
+    
     def __init__(self, app):
         self.app = app
         self.frame = tk.Frame(app.container)
@@ -697,10 +698,11 @@ class ExplorePage:
 
         self.search_text = tk.StringVar()     #variavel que guarda o conteudo inserido na search bar
         self.search_bar = tk.Entry(self.search_frame, width=150, textvariable=self.search_text)
+        self.search_bar.insert(0,"You can search for an album name, category, number of likes or even album description!")
         self.search_bar.pack(side="left", pady=(5, 0), padx=5)
 
         self.search_button = tk.Button(self.search_frame, text="Search", command=self.do_search) 
-        self.search_button.pack(side="right", pady=(5, 0), anchor="w")
+        self.search_button.pack(side="right", pady=(5, 0), anchor="w", padx=5)
         # adicionar o botao de limpar pesquisa
         self.clear_button = tk.Button(self.search_frame, text="CLEAR FILTERS", command=self.undo_search) 
         self.clear_button.pack(side="right", pady=(5, 0), anchor="e")
@@ -731,6 +733,8 @@ class ExplorePage:
         self.albuns_list = os.listdir(self.album_path)
         new_list = []
 
+        search_match_found = False
+
         for album_index in self.albuns_list:
             current_album_path = os.path.join(self.album_path, album_index)
 
@@ -741,20 +745,24 @@ class ExplorePage:
                 # Verifica se data_album é válido e tem elementos suficientes
                 if data_album and len(data_album) >= 7:
                     # verificar se algum dado do album é igual à procura
-                    search_match = False
                     # data é uma lista com o conteudo de cada linha do albuns.txt. data[0] é o index do album
                     for data in data_album:
                         if data.lower() == search_query:
-                            search_match = True
                             new_list.append(data_album[0])
+                            search_match_found = True
                             break
                     
-                if search_match:
-                    # apagar todos os albuns
-                    for widget in self.image_frame.winfo_children():
-                        widget.destroy()
-                    # mostrar resultado da pesquisa
-                    self.searched_Albuns(new_list)
+        if search_match_found:
+            # apagar todos os albuns
+            for widget in self.image_frame.winfo_children():
+                widget.destroy()
+            # mostrar resultado da pesquisa
+            self.searched_Albuns(new_list)
+        else:
+            # mensagem de erro caso não encontre nada
+            messagebox.showwarning("No Results", "no results found for {}".format(search_query))
+            self.search_bar.delete(0,"end")
+
     
     def searched_Albuns(self, new_list):
         # lista de albuns depois de aplicar o filtro
@@ -807,7 +815,7 @@ class ExplorePage:
     def undo_search(self):
         for widget in self.image_frame.winfo_children():
             widget.destroy()
-
+        self.search_bar.delete(0,"end")
         HomePage.displayAlbuns(self)
 
     def show_album(self, index):
@@ -931,12 +939,12 @@ class AlbumPage:
     def add_comment(self):
         comment_text = self.comment_entry.get()
         if comment_text:
-            self.comment_history.insert(tk.END, user.first_name+" "+user.last_name+":"+comment_text+"\n")#guarda o index do autor, o nome e o comentario
-            self.comment_history.yview(tk.END)#atualiza a textbox
-            self.comment_entry.delete(0, tk.END)#apaga a entry
+            self.comment_history.insert(tk.END, user.first_name+" "+user.last_name+":"+comment_text+"\n") # guarda o index do autor, o nome e o comentario
+            self.comment_history.yview(tk.END) # atualiza a textbox
+            self.comment_entry.delete(0, tk.END) # apaga a entry
 
             # Adicionar o comentário ao arquivo
-            self.save_comment_to_file(comment_text)#guarda no file
+            self.save_comment_to_file(comment_text)# guarda no file
             self.com_notification(comment_text)
     
     def com_notification(self,comment):
@@ -946,15 +954,15 @@ class AlbumPage:
             noti_file.write("\n{0};{1};2;{2};{3};{4};".format(self.DataAlbum[5],user.autor_index,comment,self.DataAlbum[0],current_day))
 
     def load_comments_from_file(self):
-        file_path = f"./files/comments_{self.album_index}.txt"#cria o path
-        if os.path.exists(file_path):#pergunta se existe
+        file_path = f"./files/comments_{self.album_index}.txt" # cria o path
+        if os.path.exists(file_path): # pergunta se existe
             with open(file_path, 'r', encoding="utf-8") as file:
-                comments = file.readlines()#guarda todo o ficheiro
+                comments = file.readlines() # guarda todo o ficheiro
 
-                for comment in comments:#percorre todas as linhas 
-                    comment = comment.split(";")#cria sub-strings
-                    Author = comment[1]#autor
-                    self.comment_history.insert(tk.END, Author +":"+comment[2]+"\n")#coloca comentario
+                for comment in comments: # percorre todas as linhas 
+                    comment = comment.split(";")# cria sub-strings
+                    Author = comment[1] # autor
+                    self.comment_history.insert(tk.END, Author +":"+comment[2]+"\n") # coloca comentario
                     self.comment_history.yview(tk.END)
 
 
@@ -962,7 +970,7 @@ class AlbumPage:
         # Salvar o comentário em um arquivo
         file_path = f"./files/comments_{self.album_index}.txt"
         with open(file_path, 'a', encoding="utf-8") as file:
-            file.write(str(user.autor_index)+";"+user.first_name+" "+user.last_name+";"+comment+"\n")#guarda index do autor, primeiro e ultimo nome, comentario
+            file.write(str(user.autor_index)+";"+user.first_name+" "+user.last_name+";"+comment+"\n") # guarda index do autor, primeiro e ultimo nome, comentario
 
 
     def update_counter(self, new_value):
@@ -972,40 +980,40 @@ class AlbumPage:
         current_date = date.datetime.now()
         current_day = current_date.strftime("%d/%m/%Y")
 
-        if int(self.DataAlbum[0]) not in user.liked_albuns: #pergunta se ja tem like
-            self.DataAlbum[6] = str(int(self.DataAlbum[6]) + 1) #add do like
+        if int(self.DataAlbum[0]) not in user.liked_albuns: # pergunta se ja tem like
+            self.DataAlbum[6] = str(int(self.DataAlbum[6]) + 1) # add do like
 
             with open("./files/notifications.txt","a", encoding="utf-8") as noti_file:
-                noti_file.write("\n{0};{1};1;0;{2};{3};".format(self.DataAlbum[5], user.autor_index,self.DataAlbum[0],current_day))
+                noti_file.write("\n{0};{1};1;0;{2};{3};".format(self.DataAlbum[5], user.autor_index,self.DataAlbum[0],current_day)) # adiciona linha no notifcations.txt
 
-            self.data[int(self.album_index)-1] = ";".join(self.DataAlbum) +"\n" #atualiza a linha dos dados do album
+            self.data[int(self.album_index)-1] = ";".join(self.DataAlbum) +"\n" # atualiza a linha dos dados do album
 
-            with open("./files/albuns.txt", "w") as file: #guarda todo o ficheiro ja com a linha actualizada
+            with open("./files/albuns.txt", "w") as file: # guarda todo o ficheiro ja com a linha actualizada
                 file.writelines(self.data)
 
-            user.liked_albuns.add(int(self.DataAlbum[0])) #adicina o index do album
-            self.save_likes_to_file() #guarda no ficheiro o index do album
-            AlbumPage.update_counter(self,self.DataAlbum[6]) #realiza update do contador
+            user.liked_albuns.add(int(self.DataAlbum[0])) # adiciona o index do album
+            self.save_likes_to_file() # guarda no ficheiro o index do album
+            AlbumPage.update_counter(self,self.DataAlbum[6]) # realiza update do contador
         else:
-            op = messagebox.askquestion("you already like it","Want to remove the like?") #ja deu like, pergunta se quer tirar
-            if op == "yes": #se for sim
+            op = messagebox.askquestion("you already like it","Want to remove the like?") # ja deu like, pergunta se quer tirar
+            if op == "yes": # se for sim
                 self.DataAlbum[6] = str(int(self.DataAlbum[6]) - 1) #tira o like
 
                 self.data[int(self.album_index)-1] = ";".join(self.DataAlbum) +"\n" #refaz a linha
 
-                with open("./files/albuns.txt", "w", encoding="utf-8") as file: #guara todo o conteudo ja actualizado
+                with open("./files/albuns.txt", "w", encoding="utf-8") as file: # guara todo o conteudo ja actualizado
                     file.writelines(self.data)
 
-                user.liked_albuns.remove(int(self.DataAlbum[0])) #remove o index
-                self.save_likes_to_file() #actualiza no ficheiro
-                AlbumPage.update_counter(self,self.DataAlbum[6]) #dá update no contador
+                user.liked_albuns.remove(int(self.DataAlbum[0])) # remove o index
+                self.save_likes_to_file() # actualiza no ficheiro
+                AlbumPage.update_counter(self,self.DataAlbum[6]) # dá update no contador
 
     def save_likes_to_file(self):
-        with open("./files/likes.txt", 'r', encoding="utf-8") as file: #abre o ficheiro
-            info_likes = file.readlines() #lê todas a linhas
+        with open("./files/likes.txt", 'r', encoding="utf-8") as file: # abre o ficheiro
+            info_likes = file.readlines() # lê todas a linhas
             
-            info_likes[int(user.autor_index)-1] = user.autor_index +";"+ ','.join(map(str,user.liked_albuns))+"\n" #linha do user logado e actualiza com os index dos albuns que tem gosto
-        with open("./files/likes.txt", 'w', encoding="utf-8") as file:#guardo todas as linha
+            info_likes[int(user.autor_index)-1] = user.autor_index +";"+ ','.join(map(str,user.liked_albuns))+"\n" # linha do user logado e actualiza com o index dos albuns que tem gosto
+        with open("./files/likes.txt", 'w', encoding="utf-8") as file:# guardo todas as linhas
             file.writelines(info_likes)
 
     def list_images(self):
@@ -1266,17 +1274,17 @@ class AdminPage:
         self.right_frame = tk.Frame(self.frame)
         self.right_frame.pack(side="right", padx=50)
 
-        self.album_tree = ttk.Treeview(self.right_frame, selectmode="browse", columns=("Index","Author","Title","Category","Number of Photos"), show="headings")
+        self.album_tree = ttk.Treeview(self.right_frame, selectmode="browse", columns=("Index","Author","Title","Category","Creation Date"), show="headings")
         self.album_tree.column("Index",width=50,anchor="c")
         self.album_tree.column("Author",width=100,anchor="c")
         self.album_tree.column("Title",width=100,anchor="c")
         self.album_tree.column("Category",width=100,anchor="c")
-        self.album_tree.column("Number of Photos",width=100,anchor="c")
+        self.album_tree.column("Creation Date",width=100,anchor="c")
         self.album_tree.heading("Index",text="Index")
         self.album_tree.heading("Author",text="Author")
         self.album_tree.heading("Title",text="Title")
         self.album_tree.heading("Category",text="Category")
-        self.album_tree.heading("Number of Photos",text="Number of Photos")
+        self.album_tree.heading("Creation Date",text="Creation Date")
         self.album_tree.pack(pady=15)
 
         self.btn_albumRemove = tk.Button(self.right_frame, text="Remove Album",  height=5, width=20, command=self.remove_albums)
