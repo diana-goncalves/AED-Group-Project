@@ -1341,44 +1341,30 @@ class AdminPage:
     def remove_albums(self):
     
         if self.album_tree.focus() == "":
-            messagebox.showerror("Error","Select item first")
+            messagebox.showerror("Error", "Select item first")
             return
         else:
             row_id = self.album_tree.focus()
-            album_deleted = self.album_tree.item(row_id,"values") # Obtem os dados do album
+            album_deleted = self.album_tree.item(row_id, "values")
 
-            destino_dir = "./Albuns/%s" %str(album_deleted[0]) # Cria o path para as fotos do album
+            # Renumber the remaining albums
+            for item in self.album_tree.get_children():
+                current_index = int(self.album_tree.item(item, 'values')[0])
+                os.rename("./Albuns/{}".format(item),current_index)
+                if current_index > int(album_deleted[0]):
+                    new_index = current_index - 1
+                    self.album_tree.item(item, values=(new_index,) + tuple(self.album_tree.item(item, 'values')[1:]))
 
-            for imagem in os.listdir(destino_dir): # Percorre as imagens e elimina-as
-                caminho_imagem = os.path.join(destino_dir,imagem)
+            # Delete the selected album
+            destino_dir = f"./Albuns/{album_deleted[0]}"
+            for imagem in os.listdir(destino_dir):
+                caminho_imagem = os.path.join(destino_dir, imagem)
                 os.remove(caminho_imagem)
             os.rmdir(destino_dir)
             self.album_tree.delete(row_id)
-        self.save_treeview(self.album_tree,"./files/albuns.txt")
-        # if self.album_tree.focus() == "":
-        #     messagebox.showerror("Error", "Select item first")
-        #     return
-        # else:
-        #     row_id = self.album_tree.focus()
-        #     album_deleted = self.album_tree.item(row_id, "values")
 
-        #     # Step 1: Renumber the remaining albums
-        #     for item in self.album_tree.get_children():
-        #         current_index = int(self.album_tree.item(item, 'values')[0])
-        #         if current_index > int(album_deleted[0]):
-        #             new_index = current_index - 1
-        #             self.album_tree.item(item, values=(new_index,) + tuple(self.album_tree.item(item, 'values')[1:]))
-
-        #     # Step 2: Delete the selected album
-        #     destino_dir = f"./Albuns/{album_deleted[0]}"
-        #     for imagem in os.listdir(destino_dir):
-        #         caminho_imagem = os.path.join(destino_dir, imagem)
-        #         os.remove(caminho_imagem)
-        #     os.rmdir(destino_dir)
-        #     self.album_tree.delete(row_id)
-
-        # # Step 3: Save the modified album data to the file
-        # self.save_treeview(self.album_tree, "./files/albuns.txt")
+        # Save the modified album data to the file
+        self.save_treeview(self.album_tree, "./files/albuns.txt")
 
     def save_treeview(self, treeview, nome_do_ficheiro):
             with open(nome_do_ficheiro, 'w') as ficheiro:
