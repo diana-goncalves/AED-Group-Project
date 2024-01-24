@@ -1275,17 +1275,23 @@ class AdminPage:
         self.right_frame = tk.Frame(self.frame)
         self.right_frame.pack(side="right", padx=50)
 
-        self.album_tree = ttk.Treeview(self.right_frame, selectmode="browse", columns=("Index","Author","Title","Category","Creation Date"), show="headings")
+        self.album_tree = ttk.Treeview(self.right_frame, selectmode="browse", columns=("Index","Title","Description","Category","Creation Date","Author","Likes"), show="headings")
         self.album_tree.column("Index",width=50,anchor="c")
-        self.album_tree.column("Author",width=100,anchor="c")
         self.album_tree.column("Title",width=100,anchor="c")
+        self.album_tree.column("Description",width=100,anchor="c")
         self.album_tree.column("Category",width=100,anchor="c")
         self.album_tree.column("Creation Date",width=100,anchor="c")
+        self.album_tree.column("Author",width=50,anchor="c")
+        self.album_tree.column("Likes",width=100,anchor="c")
+
         self.album_tree.heading("Index",text="Index")
-        self.album_tree.heading("Author",text="Author")
         self.album_tree.heading("Title",text="Title")
         self.album_tree.heading("Category",text="Category")
+        self.album_tree.heading("Description",text="Description")
         self.album_tree.heading("Creation Date",text="Creation Date")
+        self.album_tree.heading("Author",text="Author")
+        self.album_tree.heading("Likes",text="Likes")
+        
         self.album_tree.pack(pady=15)
 
         self.btn_albumRemove = tk.Button(self.right_frame, text="Remove Album",  height=5, width=20, command=self.remove_albums)
@@ -1317,10 +1323,10 @@ class AdminPage:
             self.users_tree.insert("","end", values= (list_images[i][0],list_images[i][1],list_images[i][2],list_images[i][3],list_images[i][4]))
 
     def fill_albuns(self):
-        list_images= self.read_InfoFiles("./files/albuns.txt",6)
+        list_images= self.read_InfoFiles("./files/albuns.txt",7)
         self.album_tree.delete(*self.album_tree.get_children())
         for i in range(len(list_images)):
-            self.album_tree.insert("","end", values= (list_images[i][0],list_images[i][1],list_images[i][2],list_images[i][3],list_images[i][4],list_images[i][5]))
+            self.album_tree.insert("","end", values= (list_images[i][0],list_images[i][1],list_images[i][2],list_images[i][3],list_images[i][4],list_images[i][5],list_images[i][6]))
 
     def remove_users(self):
         if self.users_tree.focus() == "":
@@ -1333,6 +1339,7 @@ class AdminPage:
 
 
     def remove_albums(self):
+    
         if self.album_tree.focus() == "":
             messagebox.showerror("Error","Select item first")
             return
@@ -1348,18 +1355,42 @@ class AdminPage:
             os.rmdir(destino_dir)
             self.album_tree.delete(row_id)
         self.save_treeview(self.album_tree,"./files/albuns.txt")
+        # if self.album_tree.focus() == "":
+        #     messagebox.showerror("Error", "Select item first")
+        #     return
+        # else:
+        #     row_id = self.album_tree.focus()
+        #     album_deleted = self.album_tree.item(row_id, "values")
+
+        #     # Step 1: Renumber the remaining albums
+        #     for item in self.album_tree.get_children():
+        #         current_index = int(self.album_tree.item(item, 'values')[0])
+        #         if current_index > int(album_deleted[0]):
+        #             new_index = current_index - 1
+        #             self.album_tree.item(item, values=(new_index,) + tuple(self.album_tree.item(item, 'values')[1:]))
+
+        #     # Step 2: Delete the selected album
+        #     destino_dir = f"./Albuns/{album_deleted[0]}"
+        #     for imagem in os.listdir(destino_dir):
+        #         caminho_imagem = os.path.join(destino_dir, imagem)
+        #         os.remove(caminho_imagem)
+        #     os.rmdir(destino_dir)
+        #     self.album_tree.delete(row_id)
+
+        # # Step 3: Save the modified album data to the file
+        # self.save_treeview(self.album_tree, "./files/albuns.txt")
 
     def save_treeview(self, treeview, nome_do_ficheiro):
-        with open(nome_do_ficheiro, 'w') as ficheiro:
-            # Obtemos as colunas da treeview
-            colunas = treeview["columns"]
-            if treeview == self.users_tree:
-                ficheiro.write("1;adm;12345;First;Last\n")
-            for item in treeview.get_children():
-                # Obtemos os valores de cada coluna para o item atual
-                valores = [treeview.item(item, 'values')[coluna] for coluna in range(len(colunas))]##ver
-                # Escrevemos os valores no arquivo, separados por ponto e vírgula
-                ficheiro.write(';'.join(map(str, valores)) + '\n')
+            with open(nome_do_ficheiro, 'w') as ficheiro:
+                # Obtemos as colunas da treeview
+                colunas = treeview["columns"]
+                if treeview == self.users_tree:
+                    ficheiro.write("1;adm;12345;First;Last\n")
+                for item in treeview.get_children():
+                    # Obtemos os valores de cada coluna para o item atual
+                    valores = [treeview.item(item, 'values')[coluna] for coluna in range(len(colunas))]##ver
+                    # Escrevemos os valores no arquivo, separados por ponto e vírgula
+                    ficheiro.write(';'.join(map(str, valores)) + '\n')
 
     def destroy(self):
         """ Destrói o quadro da Página de Administration Page. """
