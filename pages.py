@@ -1350,10 +1350,11 @@ class AdminPage:
             # Renumber the remaining albums
             for item in self.album_tree.get_children():
                 current_index = int(self.album_tree.item(item, 'values')[0])
-                os.rename("./Albuns/{}".format(item),current_index)
                 if current_index > int(album_deleted[0]):
                     new_index = current_index - 1
                     self.album_tree.item(item, values=(new_index,) + tuple(self.album_tree.item(item, 'values')[1:]))
+                    os.rename("./Albuns/{}".format(current_index),"./Albuns/{}".format(new_index))
+
 
             # Delete the selected album
             destino_dir = f"./Albuns/{album_deleted[0]}"
